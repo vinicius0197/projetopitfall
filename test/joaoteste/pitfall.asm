@@ -2,21 +2,121 @@
 
 .data
 pixel: .string " "
+colon: .string ":"
 
 .text
 	M_SetEcall(exceptionHandling)	# Macro de SetEcall - não tem ainda na DE1-SoC
 	jal BACKGROUND
+	########
+	# startando timer
+	li a7, 130
+	ecall
+	mv s10, a0
+	# s10=0mmin0segs, initial time
+	########
 	li a3, 0x00
 	li a1, 0
 	li a2, 176
 	mv s1, a1
 	mv s2, a2
 	jal PRINTPIXEL
-	jal CONTROLE
+	
+	
+	
+	jal UPDATE
 	
 	
 	li a7,110
 	ecall
+	
+UPDATE: 
+	jal TIMER
+	#jal CONTROLE
+	j TIMER
+	
+	
+TIMER:
+	addi sp, sp, -4	# begin TIMER
+	sw ra, 0(sp)
+	li a3, 0x07	# Timer color
+	li a1, 0	# Timer horizontal psoition
+	li a2, 8	# Timer vertical position
+	
+	li a7, 130
+	ecall
+	
+	mv t2, a0
+	
+	
+	
+	
+	#######
+	# calcula os decimal min passados
+	
+	sub a0, a0, s10
+	li t0, 600000
+	li t1, 6
+	div a0, a0, t0
+	rem a0, a0, t1
+	
+	
+	li a7, 101
+	ecall
+	
+	#######
+	# calcula os unitario min passados
+	mv a0, t2
+	
+	addi a1, a1, 8
+	sub a0, a0, s10
+	li t0, 60000
+	li t1, 10
+	div a0, a0, t0
+	rem a0, a0, t1
+	
+	
+	li a7, 101
+	ecall
+	
+	#######
+	# printa os doispontos
+	la a0, colon
+	li a7, 104
+	addi a1, a1, 8
+	ecall
+	#######
+	# calcula os decimais de segs passados
+	mv a0, t2
+	
+	
+	sub a0, a0, s10
+	li t0, 10000
+	li t1, 6
+	div a0, a0, t0
+	rem a0, a0, t1
+	
+	addi a1, a1, 8
+	li a7, 101
+	ecall
+	
+	#######
+	# calcula os unidades de segs passados
+	mv a0, t2
+	
+	
+	sub a0, a0, s10
+	li t0, 1000
+	li t1, 10
+	div a0, a0, t0
+	rem a0, a0, t1
+	
+	addi a1, a1, 8
+	li a7, 101
+	ecall
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret	#end TIMER
 	
 PRINTPIXEL:
 	la a0, pixel	#begin PRINTPIXEL
@@ -83,7 +183,7 @@ CONTROLE:
 	beq a0, t2, PlayerMoveLeft
 	beq a0, t3, PlayerMoveUp
 	beq a0, t4, PlayerMoveDown
-	j CONTROLE
+	j UPDATE
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
