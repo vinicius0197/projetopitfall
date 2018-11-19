@@ -9,10 +9,20 @@
 # para ent�o usar o programa bmp2oac.exe para gerar o arquivo .bin correspondente
 
 .data
-INTRO: .string "intro.bin"
-SCENA: .string "scenary.bin"
+INTRO: .string "images/intro.bin"
+SCENA: .string "images/scenary.bin"
+STAND: .string "images/standing.bin"
 
 .text
+
+MAIN:
+	jal LOADSCREEN
+	jal BLACKSCREEN
+	jal BEGIN
+	jal HARRY
+	jal FIM
+
+LOADSCREEN:
 # SHOW PSEUDO LOADSCREEN
 	la a0,INTRO# Endere�o da string do nome do arquivo
 	li a1,0		# Leitura
@@ -35,18 +45,22 @@ SCENA: .string "scenary.bin"
 	li a0 2000
 	li a7 32
 	ecall
+	ret
+#==================================================
 
-# Preenche a tela de preto
+BLACKSCREEN:
 	li t1,0xFF000000	# endereco inicial da Memoria VGA
 	li t2,0xFF012C00	# endereco final
 	li t3,0x00000000	# cor vermelho|vermelho|vermelhor|vermelho
-LOOP: 	beq t1,t2,START	# Se for o �ltimo endere�o ent�o sai do loop
+LOOP1: 	beq t1,t2,END1	# Se for o �ltimo endere�o ent�o sai do loop
 	sw t3,0(t1)		# escreve a word na mem�ria VGA
 	addi t1,t1,4		# soma 4 ao endere�o
-	j LOOP			# volta a verificar
+	j LOOP1			# volta a verificar
+END1:
+	ret
+#==================================================
 
-# TELAINICIAL
-START:
+BEGIN:
 	la a0,SCENA # Endere�o da string do nome do arquivo
 	li a1,0		# Leitura
 	li a2,0		# bin�rio
@@ -66,7 +80,28 @@ START:
 	mv a0,t0		# $a0 recebe o descritor
 	li a7,57		# syscall de close file
 	ecall			# retorna se foi tudo Ok
+	ret
+#==================================================
 
-# devolve o controle ao sistema operacional
 FIM:	li a7,10		# syscall de exit
 	ecall
+#==================================================
+
+HARRY:
+	li t1,0xFF000000	# endereco inicial da Memoria VGA
+	li t2,0xFF012C00	# endereco final
+	li t3,0x00000000	# cor vermelho|vermelho|vermelhor|vermelho
+	li t0,4
+	li t4,60
+LOOP2: 	beq t1,t2,END2	# Se for o �ltimo endere�o ent�o sai do loop
+	beq t0,t4,BREAKLINE
+	addi t0,t0,4
+	sw t3,0(t1)		# escreve a word na mem�ria VGA
+	addi t1,t1,4		# soma 4 ao endere�o
+	j LOOP2			# volta a verificar
+BREAKLINE:
+	li t0,4
+	addi t1,t1,1220
+	j LOOP2
+END2:
+	ret
