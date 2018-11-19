@@ -5,34 +5,80 @@ pixel: .string " "
 colon: .string ":"
 
 .text
+
+	###################
+	# Registradores permanentes e como estão sendo utlizados:
+	#
+	#	s1 = posição horizontal atual Jogador
+	#	s2 = posição vertical atual Jogador
+	#	s10 = Tempo daqui a 20 min (usado para calculos de Timer)
+	#	s11 = Tempo de inicio de programa (usado para calculos de Fisicas)
+	#	s3 = set on ZERO se tiver em free fall. Altura do pulo
+	#
+	#
+	###################
+	
 	M_SetEcall(exceptionHandling)	# Macro de SetEcall - não tem ainda na DE1-SoC
 	jal BACKGROUND
 	########
 	# startando timer
 	li a7, 130
 	ecall
-	mv s10, a0
-	# s10=0mmin0segs, initial time
+	mv s11, a0 # tempo inicio de programa
+	li a0, 0x00124F80	# 20 minutos
+	#li a0, 0x00002710	#10 segundos (para debug)
+	add s10, s11, a0	# tempo inicial + 20 min
+	# s10=20mmin0segs, initial time
 	########
 	li a3, 0x00
 	li a1, 0
-	li a2, 176
+	li a2, 152
 	mv s1, a1
 	mv s2, a2
 	jal PRINTPIXEL
 	
 	
-	
+	li s3, 0
 	jal UPDATE
 	
 	
 	li a7,110
 	ecall
 	
-UPDATE: 
+GRAVIDADE:
+
+	addi sp, sp, -4	# begin GRAVIDADE
+	sw ra, 0(sp)
+	
+	
+	# check for colision
+	li t1, 160
+	mv a2, s2
+	addi a2, a2, 8
+	beq a2, t1, Break
+	# done checking
+	
+	mv a1, s1
+	mv a2, s2
+	li a3, 0xFFFF
+	jal PRINTPIXEL
+
+	addi s2, s2, 8
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret	# end GRAVIDADE
+	
+UPDATE: 										#update
+	li a0, 100	# limitar a velocidade
+	li a7, 132
+	ecall
 	jal TIMER
-	#jal CONTROLE
-	j TIMER
+	jal CheckJump
+	jal GRAVIDADE
+	jal DrawPlayer
+	jal CONTROLE
+	j UPDATE
 	
 	
 TIMER:
@@ -46,7 +92,7 @@ TIMER:
 	ecall
 	
 	mv t2, a0
-	
+	li t3, -1	
 	
 	
 	
@@ -61,6 +107,7 @@ TIMER:
 	
 	
 	li a7, 101
+	mul a0, a0, t3
 	ecall
 	
 	#######
@@ -76,6 +123,7 @@ TIMER:
 	
 	
 	li a7, 101
+	mul a0, a0, t3
 	ecall
 	
 	#######
@@ -97,6 +145,7 @@ TIMER:
 	
 	addi a1, a1, 8
 	li a7, 101
+	mul a0, a0, t3
 	ecall
 	
 	#######
@@ -112,7 +161,9 @@ TIMER:
 	
 	addi a1, a1, 8
 	li a7, 101
+	mul a0, a0, t3
 	ecall
+	
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
@@ -128,17 +179,17 @@ BACKGROUND:
 	addi sp, sp, -4	# begin BACKGROUND
 	sw ra, 0(sp)
 	jal CLS
-	li a1, -1
-	li a2, 184
-	li a3, 0x0500
-	li t0, 320
-	jal Colision
+	li a1, -1	# facilita a função de draw
+	li a2, 160	# posição vertical do chão
+	li a3, 0x0500	# cor do chão
+	li t0, 320	# tamanho de pixels da tela horizontal
+	jal DrawFloor
 	lw ra, 0(sp)
 	addi sp, sp, 4
 	ret
 	
-Colision:
-	addi a1, a1, 1
+DrawFloor:	
+	addi a1, a1, 1	# i++
 	addi sp, sp, -4
 	sw ra, 0(sp)
 	
@@ -146,8 +197,21 @@ Colision:
 	
 	lw ra, 0(sp)
 	addi, sp, sp, 4
-	bne a1, t0, Colision
+	bne a1, t0, DrawFloor
 	ret
+	
+DrawPlayer:
+	addi sp, sp, -4	# begin DrawPlayer
+	sw ra, 0(sp)
+	
+	li a3, 0x00
+	mv a1, s1
+	mv a2, s2
+	jal PRINTPIXEL
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret		# end DrawPlayer
 	
 GetCommand:	
 # syscall read string
@@ -167,9 +231,8 @@ CONTROLE:
 	# s=0x00000073
 	# p=0x00000000
 	######################
-	addi sp, sp, -4	# begin CONTROLE
+	addi sp, sp, -4	# begin Controle
 	sw ra, 0(sp)
-	
 	jal GetCommand	# gets an input and stores it in a0
 	
 	li t0, 0x00000020	# SPACE
@@ -178,127 +241,51 @@ CONTROLE:
 	li t3, 0x00000077	# W key 
 	li t4, 0x00000073	# S key  
 	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	
 	beq a0, t0, Jump
 	beq a0, t1, PlayerMoveRight
 	beq a0, t2, PlayerMoveLeft
-	beq a0, t3, PlayerMoveUp
-	beq a0, t4, PlayerMoveDown
-	j UPDATE
 	
-	lw ra, 0(sp)
-	addi sp, sp, 4
-	ret	
+	ret
 	
-Jump:
-	addi sp, sp, -4	# begin Gravity test
+Jump:	
+	addi sp, sp, -4	# begin Jump
 	sw ra, 0(sp)
 	
-	# S = s0 + a * dT
-	#jal PlayerMoveUp
-	mv a1, s1
+	bgt s3, zero, Break
+	# check for mid air jump
+	li t0, 152
 	mv a2, s2
-	li a3, 0xFFFF
-	jal PRINTPIXEL
+	blt a2, t0, Break
+	# done checking
 	
-	addi s2, s2, -20
-	mv a1, s1
-	mv a2, s2
-	li a3, 0x00
-	jal PRINTPIXEL
-	#
-	li a7, 32
-	li a0, 100
-	ecall
+	li s3, 3	# altura do pulo
 	
-	#jal PlayerMoveUp
-	mv a1, s1
-	mv a2, s2
-	li a3, 0xFFFF
-	jal PRINTPIXEL
-	
-	addi s2, s2, -16
-	mv a1, s1
-	mv a2, s2
-	li a3, 0x00
-	jal PRINTPIXEL
-	#
-	li a7, 32
-	li a0, 100
-	ecall
-	
-	#jal PlayerMoveUp
-	mv a1, s1
-	mv a2, s2
-	li a3, 0xFFFF
-	jal PRINTPIXEL
-	
-	addi s2, s2, -12
-	mv a1, s1
-	mv a2, s2
-	li a3, 0x00
-	jal PRINTPIXEL
-	#
-	li a7, 32
-	li a0, 100
-	ecall
-	
-	
-	########
-	
-	#jal PlayerMoveUp
-	mv a1, s1
-	mv a2, s2
-	li a3, 0xFFFF
-	jal PRINTPIXEL
-	
-	addi s2, s2, 12
-	mv a1, s1
-	mv a2, s2
-	li a3, 0x00
-	jal PRINTPIXEL
-	#
-	li a7, 32
-	li a0, 100
-	ecall
-	
-	#jal PlayerMoveUp
-	mv a1, s1
-	mv a2, s2
-	li a3, 0xFFFF
-	jal PRINTPIXEL
-	
-	addi s2, s2, 16
-	mv a1, s1
-	mv a2, s2
-	li a3, 0x00
-	jal PRINTPIXEL
-	#
-	li a7, 32
-	li a0, 100
-	ecall
-	
-	#jal PlayerMoveUp
-	mv a1, s1
-	mv a2, s2
-	li a3, 0xFFFF
-	jal PRINTPIXEL
-	
-	addi s2, s2, 20
-	mv a1, s1
-	mv a2, s2
-	li a3, 0x00
-	jal PRINTPIXEL
-	#
-	li a7, 32
-	li a0, 100
-	ecall
-	
-	
-
 	lw ra, 0(sp)
 	addi sp, sp, 4
 	ret
 	
+CheckJump:
+	addi sp, sp, -4	# begin CheckJump
+	sw ra, 0(sp)
+	
+	beq s3, zero, Break
+	
+	
+	
+	mv a1, s1
+	mv a2, s2
+	li a3, 0xFFFF
+	jal PRINTPIXEL
+	addi s3, s3, -1
+	addi s2, s2, -16
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret
+			
 PlayerMoveRight:
 
 	# check for out of bounds
@@ -318,10 +305,6 @@ PlayerMoveRight:
 	jal PRINTPIXEL
 	
 	addi s1, s1, 8
-	mv a1, s1
-	mv a2, s2
-	li a3, 0x00
-	jal PRINTPIXEL
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
@@ -346,57 +329,6 @@ PlayerMoveLeft:
 	jal PRINTPIXEL
 	
 	addi s1, s1, -8
-	mv a1, s1
-	mv a2, s2
-	li a3, 0x00
-	jal PRINTPIXEL
-	
-	lw ra, 0(sp)
-	addi sp, sp, 4
-	ret
-	
-PlayerMoveUp:
-	addi sp, sp, -4	# begin PlayerMoveUp
-	sw ra, 0(sp)
-	
-	mv a1, s1
-	mv a2, s2
-	li a3, 0xFFFF
-	jal PRINTPIXEL
-	
-	addi s2, s2, -8
-	mv a1, s1
-	mv a2, s2
-	li a3, 0x00
-	jal PRINTPIXEL
-	
-	lw ra, 0(sp)
-	addi sp, sp, 4
-	ret
-	
-PlayerMoveDown:
-
-	# check for colision
-	li t1, 184
-	mv a2, s2
-	addi a2, a2, 8
-	beq a2, t1, Stop
-	# done checking
-	
-	
-	addi sp, sp, -4	
-	sw ra, 0(sp)
-	
-	mv a1, s1
-	mv a2, s2
-	li a3, 0xFFFF
-	jal PRINTPIXEL
-	
-	addi s2, s2, 8
-	mv a1, s1
-	mv a2, s2
-	li a3, 0x00
-	jal PRINTPIXEL
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
@@ -409,8 +341,11 @@ CLS:	li a0,0xFF	#rgb(121, 210, 121)
 #	jal exceptionHandling
 	ret
 	
-Stop:
-	j CONTROLE
+Break:
+	#j UPDATE
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret
 	
 OutOfBoundsRight:
 	mv a1, s1
@@ -424,7 +359,7 @@ OutOfBoundsRight:
 	li a3, 0x00
 	jal PRINTPIXEL
 	
-	j CONTROLE
+	j UPDATE
 	
 OutOfBoundsLeft:
 	mv a1, s1
@@ -438,6 +373,10 @@ OutOfBoundsLeft:
 	li a3, 0x00
 	jal PRINTPIXEL
 	
-	j CONTROLE
+	j UPDATE
+	
+ENDGAME:
+	li a7, 110
+	ecall
 
 .include "SYSTEMv11.s"
