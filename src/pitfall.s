@@ -88,20 +88,45 @@ FIM:	li a7,10		# syscall de exit
 #==================================================
 
 HARRY:
-	li t1,0xFF000000	# endereco inicial da Memoria VGA
-	li t2,0xFF012C00	# endereco final
-	li t3,0x00000000	# cor vermelho|vermelho|vermelhor|vermelho
-	li t0,4
-	li t4,60
-LOOP2: 	beq t1,t2,END2	# Se for o �ltimo endere�o ent�o sai do loop
-	beq t0,t4,BREAKLINE
+	la a0,STAND # Endere�o da string do nome do arquivo
+	li a1,0		# Leitura
+	li a2,0		# bin�rio
+	li a7,1024		# syscall de open file
+	ecall			# retorna em $v0 o descritor do arquivo
+	mv t0,a0		# salva o descritor em $t0
+# Le o arquivos para a memoria VGA
+	mv a0,t0		# $a0 recebe o descritor
+	li a1,0xFF000000	# endereco de destino dos bytes lidos
+	li a2,375		# quantidade de bytes
+	li a7,63		# syscall de read file
+	ecall			# retorna em $v0 o numero de bytes lidos
+#Fecha o arquivo
+	mv a0,t0		# $a0 recebe o descritor
+	li a7,57		# syscall de close file
+	ecall
+
+#imprime harry
+	li t0,0xFF000008	# posicao inicial do boneco 20x24
+	add t1,zero,t0	# endereco final
+	li t2,0x07070707	# cor preto|preto|preto|preto
+	li t6,35200
+	add t0,t0,t6
+	li t6,42880
+	add t1,t1,t6
+	li t3,0
+	li t4,20		# multiplo de 4, largura
+	
+LOOP2: 	beq t0,t1,END2	# Se for o �ltimo endere�o ent�o sai do loop
+	beq t3,t4,BREAKLINE
+	sw t2,0(t0)		# escreve a word na memoria VGA
 	addi t0,t0,4
-	sw t3,0(t1)		# escreve a word na mem�ria VGA
-	addi t1,t1,4		# soma 4 ao endere�o
+	addi t3,t3,4
 	j LOOP2			# volta a verificar
 BREAKLINE:
-	li t0,4
-	addi t1,t1,1220
+	li t3,0
+	addi t5,t4,-320
+	neg t5,t5
+	add t0,t0,t5
 	j LOOP2
 END2:
 	ret
