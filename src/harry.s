@@ -23,7 +23,7 @@ standing: .word 20, 24
 199,199,199,199,199,199,199,25,25,25,25,25,25,199,199,199,199,199,199,199,
 199,199,199,199,199,199,199,25,25,199,199,199,199,199,199,199,199,199,199,199,
 199,199,199,199,199,199,199,25,25,25,25,199,199,199,199,199,199,199,199,199,
-199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,
+199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199
 
 jump1: .word 20, 24
 .byte 199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,199,
@@ -67,16 +67,17 @@ jump1: .word 20, 24
 	li t4,%x		# numero de colunas ate o boneco
 	add t0,t0,t4		# adiciona posicao x a posicao inicial boneco (colunas)
 	# ================================ variaveis t0=posicaoinicial t4=x t5=y t6=larguralinha
-	
+
 	add t1,zero,t0		# endereco final
 	li t3,24		# altura
 	mul t3,t6,t3		# altura do boneco
 	add t1,t1,t3
-	add t1,t1,t4
+	addi t1,t1,-8
 	
 	li t3,0			#tamanho da quebra de linha
 	li t4,20
 	la t6,jump1
+	addi t6,t6,8
 
 LOOP2: 	bgt t0,t1,END2	# Se for o �ltimo endere�o ent�o sai do loop
 	beq t3,t4,BREAKLINE

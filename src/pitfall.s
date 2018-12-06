@@ -1,12 +1,7 @@
 #########################################################
-#  Programa de exemplo de uso do Bitmap Display Tool   	#
-#  OAC Abril 2018			  		#
-#  Marcus Vinicius Lamar		  		#
+#  OAC 					  		#
+#  Grupo 6				  		#
 #########################################################
-#
-# Cuidar que o arquivo display.bin deve estar no mesmo diret�rio do Rars!
-# Use o programa paint.net (baixar da internet) para gerar o arquivo .bmp de imagem 320x240 e 24 bits/pixel
-# para ent�o usar o programa bmp2oac.exe para gerar o arquivo .bin correspondente
 
 .data
 INTRO: .string "images/intro.bin"
@@ -90,4 +85,4 @@ FIM:	li a7,10		# syscall de exit
 #==================================================
 
 HARRY:
-	harry_print STAND,160,120
+	harry_print 1,160,120
