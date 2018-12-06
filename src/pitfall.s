@@ -11,7 +11,7 @@
 .data
 INTRO: .string "images/intro.bin"
 SCENA: .string "images/scenary.bin"
-STAND: .string "images/standing.bin"
+STAND: .string "images/harry/jump1.bin"
 
 .include "harry.s"
 
