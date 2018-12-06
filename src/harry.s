@@ -61,11 +61,11 @@ jump1: .word 20, 24
 # Define intervalo de print do boneco
 	li t0,0xFF000000	# posicao inicial da tela
 	li t6,320		# largura da tela
-	li t5,%y		# numero de linhas ate altura do boneco
-	mul t4,t5,t6		# quantidade de linhas ate altura do boneco
+	mv t5,%y		# numero de linhas ate altura do boneco
+	mul t4,%y,t6		# quantidade de linhas ate altura do boneco
 	add t0,t0,t4		# adicona a posicao inicial do boneco
-	li t4,%x		# numero de colunas ate o boneco
-	add t0,t0,t4		# adiciona posicao x a posicao inicial boneco (colunas)
+	mv t4,%x		# numero de colunas ate o boneco
+	add t0,t0,%x		# adiciona posicao x a posicao inicial boneco (colunas)
 	# ================================ variaveis t0=posicaoinicial t4=x t5=y t6=larguralinha
 
 	add t1,zero,t0		# endereco final

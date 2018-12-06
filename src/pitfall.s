@@ -85,4 +85,7 @@ FIM:	li a7,10		# syscall de exit
 #==================================================
 
 HARRY:
-	harry_print 1,160,120
+	li a0,1
+	li a1,160
+	li a2,120	
+	harry_print a0,a1,a2
