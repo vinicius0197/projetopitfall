@@ -1,5 +1,7 @@
 .include "macros.s"
 .include "harry.s"
+.include "sounds.s"
+.include "enemies.s"
 
 .data
 INTRO: .string "images/intro.bin"
@@ -9,10 +11,13 @@ colon: .string ":"
 vidatext: .string "Vidas: "
 pontostext: .string "Pontos: "
 
-LevelCounter: .word 1
+LevelCounter: .word 3
 PlayerVida: .word 3	# Número de vidas do Jogador. Se chegar a zero = game over
 PlayerCoord: .word 0, 120, 0 # +0: x coord, +4: y coord, (1o piso=192y, subsolo=120y), +12: isUnderground 0=false, 1=true
-EnemyCoord: .word 0, 0
+EnemyCoord: .word 	0, 0, 0,	# barril 1: x, y, isMoving.
+			0, 0, 0,	# barril 2: x, y, isMoving
+			0, 0,		# escorpião
+			0, 0		# fogo
 TreasureCoord: .word 0, 0
 
 .text
@@ -43,20 +48,22 @@ TreasureCoord: .word 0, 0
 	
 	
 	la s1, PlayerCoord	# armazena endereco de acesso as coordenadas do jogador
-	la s2, EnemyCoord
+	la s2, EnemyCoord	# armazena endereco de acesso as coordenadas dos inimigos
 	la s11, TreasureCoord
 	li s3, 0
 	li s4, 0
-	li s5, 1000		# pontuação inicial
+	li s5, 2000		# pontuação inicial
+	jal LOADLEVEL	# essa função vai se encarregar de carregar o nivel certo. É chamada sempre em transição de niveis. Apenas carrega as posições iniciais.
 	
 UPDATE: 								#update
 	li a0, 100	# limitar a velocidade. 100 ms parece bom
 	li a7, 132
 	ecall
-	jal LOADLEVEL	# essa função vai se encarregar de carregar o nivel certo
+	jal BACKGROUND
 	jal HUD
 	jal CheckJump
 	jal GRAVIDADE
+	jal DrawBarrel
 	jal DrawPlayer
 	jal CONTROLE
 	j UPDATE
@@ -65,7 +72,7 @@ LOADLEVEL:
 	addi sp, sp, -4	# begin LOADLEVEL
 	sw ra, 0(sp)
 	
-	jal BACKGROUND
+	
 	la t0, LevelCounter
 	lw t0, 0(t0)
 	
@@ -74,6 +81,13 @@ LOADLEVEL:
 Level1:	li t1, 1
 	bne t0, t1, Level2
 	#carrega inimigos, tesouros, obstaculos, etc
+	
+	# spawn barril 1
+	li t0, 256	# x pos
+	li t1, 120	# y pos
+	sw t0, 0(s2)
+	sw t1, 4(s2)
+	
 	
 	j EndLoadLevel
 # level 1 END
@@ -84,6 +98,18 @@ Level1:	li t1, 1
 Level2:	li t1, 2
 	bne t0, t1, Level3
 	#carrega inimigos, tesouros, obstaculos, etc
+	
+	# spawn barril 1
+	li t0, 256	# x pos
+	li t1, 120	# y pos
+	sw t0, 0(s2)
+	sw t1, 4(s2)
+	
+	# spawn barril 2
+	li t0, 240	# x pos
+	li t1, 120	# y pos
+	sw t0, 12(s2)
+	sw t1, 16(s2)
 	
 	j EndLoadLevel
 # level 2 END
@@ -363,6 +389,27 @@ DrawPlayer:	# 20x24
 	addi sp, sp, 4
 	ret		# end DrawPlayer
 	
+DrawBarrel:	# 20x24
+	addi sp, sp, -4	# begin DrawBarrel
+	sw ra, 0(sp)
+	
+	#desenha 1 barril
+	lw a2, 4(s2)	# y pos do 1 barril, se for 0 nao tem barril.
+	beq a2, zero, NoBarrel
+	li a0, 1
+	lw a1, 0(s2)
+	barrel_print a0, a1, a2
+	
+	#desenha 2 barris
+	lw a2, 16(s2)	# y pos do 2 barril, se for 0 nao tem barril.
+	beq a2, zero, NoBarrel
+	li a0, 1
+	lw a1, 12(s2)
+	barrel_print a0, a1, a2
+	
+NoBarrel:	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret		# end DrawBarrel
 
 	
 GetCommand:
@@ -449,6 +496,7 @@ Jump:
 	
 	li s3, 3	# altura do pulo
 	li s4, 2	# quantos frames na altura maxima
+	sound_jump
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
