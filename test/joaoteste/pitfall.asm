@@ -1,10 +1,19 @@
 .include "macros.s"
+.include "harry.s"
 
 .data
-pixel: .string " "
+INTRO: .string "images/intro.bin"
+SCENA: .string "images/scenary.bin"
+STAND: .string "images/harry/jump1.bin"
 colon: .string ":"
-PlayerCoord: .word 0, 0 # +0: x coord, +4: y coord
+vidatext: .string "Vidas: "
+pontostext: .string "Pontos: "
+
+LevelCounter: .word 1
+PlayerVida: .word 3	# N˙mero de vidas do Jogador. Se chegar a zero = game over
+PlayerCoord: .word 0, 120, 0 # +0: x coord, +4: y coord, (1o piso=192y, subsolo=120y), +12: isUnderground 0=false, 1=true
 EnemyCoord: .word 0, 0
+TreasureCoord: .word 0, 0
 
 .text
 
@@ -14,92 +23,173 @@ EnemyCoord: .word 0, 0
 	#	s1 = endereco das coordenadas atuais Jogador
 	#	s2 = endereco das coordenadas atuais Inimigos
 	#	s10 = Tempo daqui a 20 min (usado para calculos de Timer)
-	#	s11 = Tempo de inicio de programa (usado para calculos de Fisicas)
-	#	s3 = set on ZERO se tiver em free fall. Altura do pulo
-	#
+	#	s11 = endereco das coordenadas do eventual Tesouro
+	#	s3 = altura do pulo
+	#	s4 = maxheight hold
+	#	s5 = PontuaÁ„o
 	#
 	###################
 	
 	M_SetEcall(exceptionHandling)	# Macro de SetEcall - n√£o tem ainda na DE1-SoC
-	jal BACKGROUND
 	########
 	# startando timer
 	li a7, 130
 	ecall
-	mv s11, a0 # tempo inicio de programa
+	mv s10, a0 # tempo inicio de programa
 	li a0, 0x00124F80	# 20 minutos
-	#li a0, 0x00002710	#10 segundos (para debug)
-	add s10, s11, a0	# tempo inicial + 20 min
+	add s10, s10, a0	# tempo inicial + 20 min
 	# s10=20mmin0segs, initial time
 	########
 	
-	li a1, 0
-	li a2, 152
 	
 	la s1, PlayerCoord	# armazena endereco de acesso as coordenadas do jogador
-	sw a1, 0(s1)		# x = s1
-	sw a2, 4(s1)		# y = s1 + 4
-	
-	jal DrawPlayer
-	
-	li a1, 304
-	li a2, 152
-	
 	la s2, EnemyCoord
-	sw a1, 0(s2)
-	sw a2, 4(s2)
-	
-	jal DrawBarrel	
-	
+	la s11, TreasureCoord
 	li s3, 0
-	jal UPDATE
+	li s4, 0
+	li s5, 1000		# pontuaÁ„o inicial
 	
-	
-	li a7,110
-	ecall
-	
-GRAVIDADE:
-
-	addi sp, sp, -4	# begin GRAVIDADE
-	sw ra, 0(sp)
-	
-	
-	# check for colision
-	li t1, 160
-	lw a2, 4(s1)
-	addi a2, a2, 8
-	beq a2, t1, Break
-	# done checking
-	
-	jal ErasePlayer
-	
-	lw a2, 4(s1)
-	addi a2, a2, 8
-
-	sw a2, 4(s1)
-	
-	lw ra, 0(sp)
-	addi sp, sp, 4
-	ret	# end GRAVIDADE
-	
-UPDATE: 									#update
-	li a0, 50	# limitar a velocidade
+UPDATE: 								#update
+	li a0, 100	# limitar a velocidade. 100 ms parece bom
 	li a7, 132
 	ecall
-	jal TIMER
+	jal LOADLEVEL	# essa funÁ„o vai se encarregar de carregar o nivel certo
+	jal HUD
 	jal CheckJump
 	jal GRAVIDADE
 	jal DrawPlayer
 	jal CONTROLE
 	j UPDATE
 	
+LOADLEVEL:
+	addi sp, sp, -4	# begin LOADLEVEL
+	sw ra, 0(sp)
+	
+	jal BACKGROUND
+	la t0, LevelCounter
+	lw t0, 0(t0)
+	
+######################
+# level 1 START
+Level1:	li t1, 1
+	bne t0, t1, Level2
+	#carrega inimigos, tesouros, obstaculos, etc
+	
+	j EndLoadLevel
+# level 1 END
+#####################
+
+######################
+# level 2 START
+Level2:	li t1, 2
+	bne t0, t1, Level3
+	#carrega inimigos, tesouros, obstaculos, etc
+	
+	j EndLoadLevel
+# level 2 END
+#####################
+
+######################
+# level 3 START
+Level3:	li t1, 3
+	bne t0, t1, Level4
+	#carrega inimigos, tesouros, obstaculos, etc
+	
+	j EndLoadLevel
+# level 3 END
+#####################
+
+######################
+# level 4 START
+Level4:	li t1, 4
+	bne t0, t1, Level5
+	#carrega inimigos, tesouros, obstaculos, etc
+	
+	j EndLoadLevel
+# level 4 END
+#####################
+
+######################
+# level 5 START
+Level5:	li t1, 5
+	bne t0, t1, Level6
+	#carrega inimigos, tesouros, obstaculos, etc
+	
+	j EndLoadLevel
+# level 5 END
+#####################
+
+######################
+# level 6 START
+Level6:	li t1, 6
+	bne t0, t1, Level7
+	#carrega inimigos, tesouros, obstaculos, etc
+	
+	j EndLoadLevel
+# level 6 END
+#####################
+
+######################
+# level 7 START
+Level7:	li t1, 7
+	bne t0, t1, Level8
+	#carrega inimigos, tesouros, obstaculos, etc
+	
+	j EndLoadLevel
+# level 7 END
+#####################
+
+######################
+# level 8 START
+Level8:	li t1, 8
+	bne t0, t1, Level9
+	#carrega inimigos, tesouros, obstaculos, etc
+	
+	j EndLoadLevel
+# level 8 END
+#####################
+
+######################
+# level 9 START
+Level9:	li t1, 9
+	bne t0, t1, Level10
+	#carrega inimigos, tesouros, obstaculos, etc
+	
+	j EndLoadLevel
+# level 9 END
+#####################
+
+######################
+# level 10 START
+Level10:	
+	#carrega inimigos, tesouros, obstaculos, etc
+	
+# level 10 END
+#####################
+	
+EndLoadLevel:	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret	# end LOADLEVEL
+	
+	
+HUD: 
+	addi sp, sp, -4	# begin HUD
+	sw ra, 0(sp)
+	
+	jal TIMER
+	jal SCORE
+	jal LIVES
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret	#end HUD	
 	
 TIMER:
 	addi sp, sp, -4	# begin TIMER
 	sw ra, 0(sp)
 	li a3, 0x07	# Timer color
-	li a1, 0	# Timer horizontal psoition
-	li a2, 8	# Timer vertical position
+	li a1, 2	# Timer horizontal psoition
+	li a2, 14	# Timer vertical position
 	
 	li a7, 130
 	ecall
@@ -182,306 +272,98 @@ TIMER:
 	addi sp, sp, 4
 	ret	#end TIMER
 	
-PRINTPIXEL:
-	la a0, pixel	#begin PRINTPIXEL
+SCORE:
+	addi sp, sp, -4	# begin SCORE
+	sw ra, 0(sp)
+	
+	li a3, 0x07	# score color
+	li a1, 8	# score horizontal position
+	li a2, 2	# score vertical position
+	
+	# texto
+	la a0, pontostext
+	li a7, 104
+	ecall		# comenta essa linha
+	
+	# pontos
+	addi a1, a1, 64	# e essa para remover o texto.
+	mv a0, s5	# load points
+	li a7, 101
+	ecall
+		
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret	#end SCORE
+	
+LIVES: 
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
+	li a3, 0x07	# lives color
+	li a1, 248	# lives horizontal position
+	li a2, 2	# lives vertical position
+	la t0, PlayerVida
+	
+	# texto
+	la a0, vidatext
 	li a7, 104
 	ecall
-	ret	
+	
+	# numVidas
+	
+	lw a0, 0(t0)
+	addi a1, a1, 56
+	li a7, 101
+	ecall
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret	#end LIVES
 	
 BACKGROUND:
 	addi sp, sp, -4	# begin BACKGROUND
 	sw ra, 0(sp)
-	jal CLS
 	
-	li a1, -1	# facilita a fun√ß√£o de draw
-	li a2, 160	# posi√ß√£o vertical do ch√£o
-	li a3, 0x0500	# cor do ch√£o
-	li t0, 320	# tamanho de pixels da tela horizontal
-	jal DrawFloor
 	
-	li a1, -1	# facilita a fun√ß√£o de draw
-	li a2, 232	# posi√ß√£o vertical do ch√£o
-	li a3, 0x0570	# cor do ch√£o
-	li t0, 320	# tamanho de pixels da tela horizontal
-	jal DrawFloor
+	la a0,SCENA 		# endereco da string do nome do arquivo
+	li a1,0			# modo leitura
+	li a2,0			# binario
+	li a7,1024		# syscall de open file
+	ecall			# retorna em $v0 o descritor do arquivo
+
+	mv t0,a0		# salva o descritor em $t0
+
+# Le o arquivos para a memoria VGA
+	mv a0,t0		# $a0 recebe o descritor
+	li a1,0xFF000000	# endereco de destino dos bytes lidos
+	li a2,76800		# quantidade de bytes
+	li a7,63		# syscall de read file
+	ecall			# retorna em $v0 o numero de bytes lidos
+
+#Fecha o arquivo
+	mv a0,t0		# $a0 recebe o descritor
+	li a7,57		# syscall de close file
+	ecall			# retorna se foi tudo Ok
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
+	
 	ret
 	
-DrawFloor:	
-	addi a1, a1, 1	# i++
-	addi sp, sp, -4
-	sw ra, 0(sp)
-	
-	jal PRINTPIXEL
-	
-	lw ra, 0(sp)
-	addi, sp, sp, 4
-	bne a1, t0, DrawFloor
-	ret
-	
-DrawPlayer:
+DrawPlayer:	# 20x24
 	addi sp, sp, -4	# begin DrawPlayer
 	sw ra, 0(sp)
 	
-	li a3, 0x00
-	
-	#####
-	
-	#			| | |
-	#			| | |		principal
-	#			|*| |
-	
+	li a0, 1
 	lw a1, 0(s1)
 	lw a2, 4(s1)
-	jal PRINTPIXEL
-	
-	#			| | |
-	#			|*| |
-	#			| | |
-	
-	addi a2, a2, -8
-	jal PRINTPIXEL
-	
-	#			|*| |
-	#			| | |
-	#			| | |
-	
-	addi a2, a2, -8
-	jal PRINTPIXEL
-	
-	#			| |*|
-	#			| | |
-	#			| | |
-	
-	addi a1, a1, 8
-	jal PRINTPIXEL
-	
-	#			| | |
-	#			| |*|
-	#			| | |
-	
-	addi a2, a2, 8
-	jal PRINTPIXEL
-	
-	#			| | |
-	#			| | |
-	#			| |*|
-	
-	addi a2, a2, 8
-	jal PRINTPIXEL
-	
-	
-	
-	#####
+	harry_print a0, a1, a2
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
 	ret		# end DrawPlayer
 	
-ErasePlayer:
-	addi sp, sp, -4	# begin ErasePlayer
-	sw ra, 0(sp)
-	
-	li a3, 0xFFFF
-	
-	#####
-	
-	#			| | |
-	#			| | |		principal
-	#			|*| |
-	
-	lw a1, 0(s1)
-	lw a2, 4(s1)
-	jal PRINTPIXEL
-	
-	#			| | |
-	#			|*| |
-	#			| | |
-	
-	addi a2, a2, -8
-	jal PRINTPIXEL
-	
-	#			|*| |
-	#			| | |
-	#			| | |
-	
-	addi a2, a2, -8
-	jal PRINTPIXEL
-	
-	#			| |*|
-	#			| | |
-	#			| | |
-	
-	addi a1, a1, 8
-	jal PRINTPIXEL
-	
-	#			| | |
-	#			| |*|
-	#			| | |
-	
-	addi a2, a2, 8
-	jal PRINTPIXEL
-	
-	#			| | |
-	#			| | |
-	#			| |*|
-	
-	addi a2, a2, 8
-	jal PRINTPIXEL
-	
-	
-	
-	#####
-	
-	lw ra, 0(sp)
-	addi sp, sp, 4
-	ret		# end ErasePlayer
-	
-DrawScorpion:
-	addi sp, sp, -4	# begin DrawScorpion
-	sw ra, 0(sp)
-	
-	li a3, 0xF000
-	
-	#####
-	
-	#			| | |		principal
-	#			|*| |
-	
-	lw a1, 0(s2)
-	lw a2, 4(s2)
-	jal PRINTPIXEL
-	
-	#			|*| |
-	#			| | |
-	
-	addi a2, a2, -8
-	jal PRINTPIXEL
-	
-	#			| |*|
-	#			| | |
-	
-	addi a1, a1, 8
-	jal PRINTPIXEL
-	
-	#			| | |
-	#			| |*|
-	
-	addi a2, a2, 8
-	jal PRINTPIXEL
-	
-	#####
-	
-	lw ra, 0(sp)
-	addi sp, sp, 4
-	ret		# end DrawScorpion
-	
-EraseScorpion:
-	addi sp, sp, -4	# begin EraseScorpion
-	sw ra, 0(sp)
-	
-	li a3, 0xFFFF
-	
-	#####
-	
-	#			| | |		principal
-	#			|*| |
-	
-	lw a1, 0(s2)
-	lw a2, 4(s2)
-	jal PRINTPIXEL
-	
-	#			|*| |
-	#			| | |
-	
-	addi a2, a2, -8
-	jal PRINTPIXEL
-	
-	#			| |*|
-	#			| | |
-	
-	addi a1, a1, 8
-	jal PRINTPIXEL
-	
-	#			| | |
-	#			| |*|
-	
-	addi a2, a2, 8
-	jal PRINTPIXEL
-	
-	#####
-	
-	lw ra, 0(sp)
-	addi sp, sp, 4
-	ret		# end EraseScorpion
-	
-	
-DrawBarrel:
-	addi sp, sp, -4	# begin DrawBarrel
-	sw ra, 0(sp)
-	
-	li a3, 0x7300
-	
-	#####
-	
-	#			|*| |		principal
-	
-	lw a1, 0(s2)
-	lw a2, 4(s2)
-	jal PRINTPIXEL
-	
-	#			| |*|
-	
-	addi a1, a1, 8
-	jal PRINTPIXEL
-	
-	#####
-	
-	lw ra, 0(sp)
-	addi sp, sp, 4
-	ret		# end DrawBarrel
-	
-EraseBarrel:
-	addi sp, sp, -4	# begin EraseBarrel
-	sw ra, 0(sp)
-	
-	li a3, 0xFFFF
-	
-	#####
-	
-	#			| | |		principal
-	#			|*| |
-	
-	lw a1, 0(s2)
-	lw a2, 4(s2)
-	jal PRINTPIXEL
-	
-	#			|*| |
-	#			| | |
-	
-	addi a2, a2, -8
-	jal PRINTPIXEL
-	
-	#			| |*|
-	#			| | |
-	
-	addi a1, a1, 8
-	jal PRINTPIXEL
-	
-	#			| | |
-	#			| |*|
-	
-	addi a2, a2, 8
-	jal PRINTPIXEL
-	
-	#####
-	
-	lw ra, 0(sp)
-	addi sp, sp, 4
-	ret		# end EraseBarrel
-	
+
 	
 GetCommand:
 KEY: 	li t1,0xFF200000		# carrega o endereÔøΩo de controle do KDMMIO
@@ -523,18 +405,50 @@ CONTROLE:
 	
 	ret
 	
+GRAVIDADE:
+
+	addi sp, sp, -4	# begin GRAVIDADE
+	sw ra, 0(sp)
+	
+	
+	# check for colision upper floor
+	li t1, 128
+	lw a2, 4(s1)
+	addi a2, a2, 8
+	beq a2, t1, Break
+	# done checking
+	
+	# check for colision lower floor
+	li t1, 200
+	lw a2, 4(s1)
+	addi a2, a2, 8
+	beq a2, t1, Break
+	# done checking
+	
+	
+	
+	lw a2, 4(s1)
+	addi a2, a2, 8
+
+	sw a2, 4(s1)
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret	# end GRAVIDADE
+	
 Jump:	
 	addi sp, sp, -4	# begin Jump
 	sw ra, 0(sp)
 	
 	bgt s3, zero, Break
 	# check for mid air jump
-	li t0, 152
+	li t0, 120
 	lw a2, 4(s1)
 	blt a2, t0, Break
 	# done checking
 	
-	li s3, 4	# altura do pulo
+	li s3, 3	# altura do pulo
+	li s4, 2	# quantos frames na altura maxima
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
@@ -545,11 +459,26 @@ CheckJump:
 	sw ra, 0(sp)
 	
 	beq s3, zero, Break
+	
+	li t1, 1
 		
-	jal ErasePlayer
+	beq s3, t1, MaxHeightHold
+	
 	addi s3, s3, -1
+	
 	lw a2, 4(s1)
 	addi a2, a2, -16
+	sw a2, 4(s1)
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret
+	
+MaxHeightHold:
+	beq s4, zero, Break
+	addi s4, s4, -1
+	lw a2, 4(s1)
+	addi a2, a2, -8
 	sw a2, 4(s1)
 	
 	lw ra, 0(sp)
@@ -569,7 +498,7 @@ PlayerMoveRight:
 	addi sp, sp, -4	# begin PlayerMoveRight
 	sw ra, 0(sp)
 	
-	jal ErasePlayer
+	
 	
 	lw a1, 0(s1)
 	addi a1, a1, 8
@@ -592,7 +521,7 @@ PlayerMoveLeft:
 	addi sp, sp, -4	# begin PlayerMoveLeft
 	sw ra, 0(sp)
 	
-	jal ErasePlayer
+	
 	
 	lw a1, 0(s1)
 	addi a1, a1, -8
@@ -602,21 +531,14 @@ PlayerMoveLeft:
 	addi sp, sp, 4
 	ret
 
-# CLS Clear Screen	(B B G G G R R R)
-CLS:	li a0,0xFF	#rgb(121, 210, 121)	
-	li a7,148
-	ecall
-#	jal exceptionHandling
-	ret
-	
 Break:
 	#j UPDATE
+	li s3, 0
 	lw ra, 0(sp)
 	addi sp, sp, 4
 	ret
 	
 OutOfBoundsRight:
-	jal ErasePlayer
 	
 	li a1, 0
 	sw a1, 0(s1)
@@ -625,7 +547,7 @@ OutOfBoundsRight:
 	j UPDATE
 	
 OutOfBoundsLeft:
-	jal ErasePlayer
+	
 		
 	li a1, 312
 	sw a1, 0(s1)
