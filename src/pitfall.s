@@ -9,6 +9,7 @@ SCENA: .string "images/scenary.bin"
 STAND: .string "images/harry/jump1.bin"
 
 .include "harry.s"
+.include "sounds.s"
 
 .text
 
@@ -17,6 +18,7 @@ MAIN:
 	#jal BLACKSCREEN
 	jal LEVEL1
 	jal HARRY
+	jal SOM1
 	jal FIM
 
 LOADSCREEN:
@@ -89,3 +91,5 @@ HARRY:
 	li a1,160
 	li a2,120	
 	harry_print a0,a1,a2
+
+SOM1:	sound_game_over
