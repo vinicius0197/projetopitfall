@@ -13,7 +13,7 @@ colon: .string ":"
 vidatext: .string "Vidas: "
 pontostext: .string "Pontos: "
 
-LevelCounter: .word 3
+LevelCounter: .word 1
 PlayerVida: .word 3	# N�mero de vidas do Jogador. Se chegar a zero = game over
 PlayerCoord: .word 0, 120, 0 # +0: x coord, +4: y coord, (1o piso=192y, subsolo=120y), +12: isUnderground 0=false, 1=true
 EnemyCoord: .word 	0, 0, 0,	# barril 1: x, y, isMoving.
@@ -60,7 +60,7 @@ TreasureCoord: .word 0, 0
 UPDATE: 								#update
 	li a0, 100	# limitar a velocidade. 100 ms parece bom
 	li a7, 132
-	ecall
+	#ecall
 	jal BACKGROUND
 	jal HUD
 	jal CheckJump
@@ -70,7 +70,7 @@ UPDATE: 								#update
 	jal CONTROLE
 	j UPDATE
 	
-LOADLEVEL:
+LOADLEVEL:	###### MUST DESPAWN (SET TO 0) IF NOT USED!!!! ######
 	addi sp, sp, -4	# begin LOADLEVEL
 	sw ra, 0(sp)
 	
@@ -86,10 +86,15 @@ Level1:	li t1, 1
 	
 	# spawn barril 1
 	li t0, 256	# x pos
-	li t1, 120	# y pos
+	li t1, 128	# y pos
 	sw t0, 0(s2)
 	sw t1, 4(s2)
 	
+	# spawn barril 2
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 12(s2)
+	sw t1, 16(s2)	
 	
 	j EndLoadLevel
 # level 1 END
@@ -103,13 +108,13 @@ Level2:	li t1, 2
 	
 	# spawn barril 1
 	li t0, 256	# x pos
-	li t1, 120	# y pos
+	li t1, 128	# y pos
 	sw t0, 0(s2)
 	sw t1, 4(s2)
 	
 	# spawn barril 2
-	li t0, 240	# x pos
-	li t1, 120	# y pos
+	li t0, 200	# x pos
+	li t1, 128	# y pos
 	sw t0, 12(s2)
 	sw t1, 16(s2)
 	
@@ -123,6 +128,18 @@ Level3:	li t1, 3
 	bne t0, t1, Level4
 	#carrega inimigos, tesouros, obstaculos, etc
 	
+	# spawn barril 1
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 0(s2)
+	sw t1, 4(s2)
+	
+	# spawn barril 2
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 12(s2)
+	sw t1, 16(s2)	
+	
 	j EndLoadLevel
 # level 3 END
 #####################
@@ -132,6 +149,18 @@ Level3:	li t1, 3
 Level4:	li t1, 4
 	bne t0, t1, Level5
 	#carrega inimigos, tesouros, obstaculos, etc
+	
+	# spawn barril 1
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 0(s2)
+	sw t1, 4(s2)
+	
+	# spawn barril 2
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 12(s2)
+	sw t1, 16(s2)
 	
 	j EndLoadLevel
 # level 4 END
@@ -143,6 +172,18 @@ Level5:	li t1, 5
 	bne t0, t1, Level6
 	#carrega inimigos, tesouros, obstaculos, etc
 	
+	# spawn barril 1
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 0(s2)
+	sw t1, 4(s2)
+	
+	# spawn barril 2
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 12(s2)
+	sw t1, 16(s2)
+	
 	j EndLoadLevel
 # level 5 END
 #####################
@@ -152,6 +193,18 @@ Level5:	li t1, 5
 Level6:	li t1, 6
 	bne t0, t1, Level7
 	#carrega inimigos, tesouros, obstaculos, etc
+	
+	# spawn barril 1
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 0(s2)
+	sw t1, 4(s2)
+	
+	# spawn barril 2
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 12(s2)
+	sw t1, 16(s2)
 	
 	j EndLoadLevel
 # level 6 END
@@ -163,6 +216,18 @@ Level7:	li t1, 7
 	bne t0, t1, Level8
 	#carrega inimigos, tesouros, obstaculos, etc
 	
+	# spawn barril 1
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 0(s2)
+	sw t1, 4(s2)
+	
+	# spawn barril 2
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 12(s2)
+	sw t1, 16(s2)
+	
 	j EndLoadLevel
 # level 7 END
 #####################
@@ -172,6 +237,18 @@ Level7:	li t1, 7
 Level8:	li t1, 8
 	bne t0, t1, Level9
 	#carrega inimigos, tesouros, obstaculos, etc
+	
+	# spawn barril 1
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 0(s2)
+	sw t1, 4(s2)
+	
+	# spawn barril 2
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 12(s2)
+	sw t1, 16(s2)
 	
 	j EndLoadLevel
 # level 8 END
@@ -183,6 +260,18 @@ Level9:	li t1, 9
 	bne t0, t1, Level10
 	#carrega inimigos, tesouros, obstaculos, etc
 	
+	# spawn barril 1
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 0(s2)
+	sw t1, 4(s2)
+	
+	# spawn barril 2
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 12(s2)
+	sw t1, 16(s2)
+	
 	j EndLoadLevel
 # level 9 END
 #####################
@@ -191,6 +280,18 @@ Level9:	li t1, 9
 # level 10 START
 Level10:	
 	#carrega inimigos, tesouros, obstaculos, etc
+	
+	# spawn barril 1
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 0(s2)
+	sw t1, 4(s2)
+	
+	# spawn barril 2
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 12(s2)
+	sw t1, 16(s2)
 	
 # level 10 END
 #####################
@@ -358,7 +459,7 @@ DrawPlayer:	# 20x24
 	li a0, 1
 	lw a1, 0(s1)
 	lw a2, 4(s1)
-	harry_print a0, a1, a2
+	jal HarryPrint
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
@@ -373,14 +474,14 @@ DrawBarrel:	# 20x24
 	beq a2, zero, NoBarrel
 	li a0, 1
 	lw a1, 0(s2)
-	barrel_print a0, a1, a2
+	jal BarrelPrint
 	
 	#desenha 2 barris
 	lw a2, 16(s2)	# y pos do 2 barril, se for 0 nao tem barril.
 	beq a2, zero, NoBarrel
 	li a0, 1
 	lw a1, 12(s2)
-	barrel_print a0, a1, a2
+	jal BarrelPrint
 	
 NoBarrel:	lw ra, 0(sp)
 	addi sp, sp, 4
@@ -511,7 +612,7 @@ MaxHeightHold:
 PlayerMoveRight:
 
 	# check for out of bounds
-	li t1, 312
+	li t1, 304
 	lw a1, 0(s1)
 	addi a1, a1, 8
 	bgt a1, t1, OutOfBoundsRight
@@ -534,7 +635,7 @@ PlayerMoveRight:
 PlayerMoveLeft:
 
 	# check for out of bounds
-	li t1, 0
+	li t1, 8
 	lw a1, 0(s1)
 	addi a1, a1, -8
 	blt a1, t1, OutOfBoundsLeft
@@ -562,24 +663,71 @@ Break:
 	ret
 	
 OutOfBoundsRight:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
+	la t0, LevelCounter
+	lw t2, 0(t0)	# t2 = level
 	
 	li a1, 0
-	sw a1, 0(s1)
-	jal DrawPlayer
+	sw a1, 0(s1)	# updates player x pos
 	
+	# check if last level
+	li t1, 10
+	li a0, 1	# level to load if condition is true
+	beq t2, t1, SetLevel
+	
+	addi t2, t2, 1
+	
+	sw t2, 0(t0)
+	
+	jal LOADLEVEL
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
 	j UPDATE
 	
 OutOfBoundsLeft:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+
+	la t0, LevelCounter
+	lw t2, 0(t0)	# t2 = level
 	
-		
-	li a1, 312
-	sw a1, 0(s1)
-	jal DrawPlayer
+	li a1, 304
+	sw a1, 0(s1)	# updates player x pos
 	
+	# check if first level
+	li t1, 1
+	li a0, 10	# level to load if condition is true
+	beq t2, t1, SetLevel
+	
+	addi t2, t2, -1
+	
+	sw t2, 0(t0)
+	
+	jal LOADLEVEL
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	j UPDATE
+	
+SetLevel:
+	sw a0, 0(t0)
+	jal LOADLEVEL
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
 	j UPDATE
 	
 ENDGAME:
 	li a7, 110
 	ecall
+	
+BarrelPrint:	# necessario para evitar leak de memoria, devido a um ret
+	barrel_print a0, a1, a2
+	
+HarryPrint:	# necessario para evitar leak de memoria, devido a um ret
+	harry_print a0, a1, a2
 
 .include "SYSTEMv11.s"
