@@ -108,6 +108,8 @@ scorpion2: .word 20, 24
 
 .macro barrel_print (%action, %x, %y)
 
+	addi sp, sp, -4	# begin BACKGROUND
+	sw ra, 0(sp)
 # Define intervalo de print do boneco
 	li t0,0xFF000000	# posicao inicial da tela
 	li t6,320		# largura da tela
@@ -143,12 +145,16 @@ BREAKLINE:
 	neg t5,t5
 	add t0,t0,t5
 	j LOOP2
-END2:
+END2:	
+	lw ra, 0(sp)
+	addi sp, sp, 4
 	ret
 .end_macro
 
 .macro scorpion_print (%action, %x, %y)
 
+	addi sp, sp, -4	# begin BACKGROUND
+	sw ra, 0(sp)
 # Define intervalo de print do boneco
 	li t0,0xFF000000	# posicao inicial da tela
 	li t6,320		# largura da tela
@@ -184,6 +190,8 @@ BREAKLINE:
 	neg t5,t5
 	add t0,t0,t5
 	j LOOP2
-END2:
+END2:	
+	lw ra, 0(sp)
+	addi sp, sp, 4
 	ret
 .end_macro
