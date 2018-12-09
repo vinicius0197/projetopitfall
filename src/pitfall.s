@@ -87,14 +87,18 @@ Level1:	li t1, 1
 	# spawn barril 1
 	li t0, 256	# x pos
 	li t1, 128	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
+	sw t2, 8(s2)
 	
 	# spawn barril 2
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
+	sw t2, 20(s2)
 	
 	j EndLoadLevel
 # level 1 END
@@ -109,14 +113,18 @@ Level2:	li t1, 2
 	# spawn barril 1
 	li t0, 256	# x pos
 	li t1, 128	# y pos
+	li t2, 1	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
+	sw t2, 8(s2)
 	
 	# spawn barril 2
 	li t0, 200	# x pos
 	li t1, 128	# y pos
+	li t2, 1	# isMoving flag
 	sw t0, 12(s2)
-	sw t1, 16(s2)
+	sw t1, 16(s2)	
+	sw t2, 20(s2)
 	
 	j EndLoadLevel
 # level 2 END
@@ -131,14 +139,18 @@ Level3:	li t1, 3
 	# spawn barril 1
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
+	sw t2, 8(s2)
 	
 	# spawn barril 2
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
+	sw t2, 20(s2)	
 	
 	j EndLoadLevel
 # level 3 END
@@ -153,14 +165,18 @@ Level4:	li t1, 4
 	# spawn barril 1
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
+	sw t2, 8(s2)
 	
 	# spawn barril 2
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
-	sw t1, 16(s2)
+	sw t1, 16(s2)	
+	sw t2, 20(s2)
 	
 	j EndLoadLevel
 # level 4 END
@@ -175,14 +191,18 @@ Level5:	li t1, 5
 	# spawn barril 1
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
+	sw t2, 8(s2)
 	
 	# spawn barril 2
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
-	sw t1, 16(s2)
+	sw t1, 16(s2)	
+	sw t2, 20(s2)
 	
 	j EndLoadLevel
 # level 5 END
@@ -197,14 +217,18 @@ Level6:	li t1, 6
 	# spawn barril 1
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
+	sw t2, 8(s2)
 	
 	# spawn barril 2
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
-	sw t1, 16(s2)
+	sw t1, 16(s2)	
+	sw t2, 20(s2)
 	
 	j EndLoadLevel
 # level 6 END
@@ -219,14 +243,18 @@ Level7:	li t1, 7
 	# spawn barril 1
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
+	sw t2, 8(s2)
 	
 	# spawn barril 2
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
-	sw t1, 16(s2)
+	sw t1, 16(s2)	
+	sw t2, 20(s2)
 	
 	j EndLoadLevel
 # level 7 END
@@ -241,14 +269,18 @@ Level8:	li t1, 8
 	# spawn barril 1
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
+	sw t2, 8(s2)
 	
 	# spawn barril 2
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
-	sw t1, 16(s2)
+	sw t1, 16(s2)	
+	sw t2, 20(s2)
 	
 	j EndLoadLevel
 # level 8 END
@@ -263,14 +295,18 @@ Level9:	li t1, 9
 	# spawn barril 1
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
+	sw t2, 8(s2)
 	
 	# spawn barril 2
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
-	sw t1, 16(s2)
+	sw t1, 16(s2)	
+	sw t2, 20(s2)
 	
 	j EndLoadLevel
 # level 9 END
@@ -284,14 +320,18 @@ Level10:
 	# spawn barril 1
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
+	sw t2, 8(s2)
 	
 	# spawn barril 2
 	li t0, 0	# x pos
 	li t1, 0	# y pos
+	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
-	sw t1, 16(s2)
+	sw t1, 16(s2)	
+	sw t2, 20(s2)
 	
 # level 10 END
 #####################
@@ -469,6 +509,8 @@ DrawBarrel:	# 20x24
 	addi sp, sp, -4	# begin DrawBarrel
 	sw ra, 0(sp)
 	
+	jal CheckBarrel
+	
 	#desenha 1 barril
 	lw a2, 4(s2)	# y pos do 1 barril, se for 0 nao tem barril.
 	beq a2, zero, NoBarrel
@@ -486,7 +528,55 @@ DrawBarrel:	# 20x24
 NoBarrel:	lw ra, 0(sp)
 	addi sp, sp, 4
 	ret		# end DrawBarrel
-
+	
+CheckBarrel:
+	li t0, 1
+	lw t1, 8(s2)	# isMoving do barril 1
+	lw t2, 20(s2)	# isMoving do barril 2
+	
+	beq t0, t1, Moving1
+aux:	beq t0, t2, Moving2
+	
+	ret
+Moving1:
+	# check for out of bounds
+	li t1, 0
+	lw a1, 0(s2)
+	addi a1, a1, -8
+	blt a1, t1, BarrelOutOfBounds1
+	# end OFB check
+	
+	lw a1, 0(s2)
+	addi a1, a1, -8
+	sw a1, 0(s2)
+	
+	j aux
+	
+Moving2:
+	# check for out of bounds
+	li t1, 0
+	lw a1, 12(s2)
+	addi a1, a1, -8
+	blt a1, t1, BarrelOutOfBounds2
+	# end OFB check
+	
+	lw a1, 12(s2)
+	addi a1, a1, -8
+	sw a1, 12(s2)
+	
+	ret
+	
+BarrelOutOfBounds1:
+	li a1, 320	########### barrel out of bounds
+	sw a1, 0(s2)	# updates barrel x pos
+	
+	j Moving1
+	
+BarrelOutOfBounds2:
+	li a1, 320	########### barrel out of bounds
+	sw a1, 12(s2)	# updates barrel x pos
+	
+	j Moving2
 	
 GetCommand:
 KEY: 	li t1,0xFF200000		# carrega o endere�o de controle do KDMMIO
@@ -572,7 +662,7 @@ Jump:
 	
 	li s3, 3	# altura do pulo
 	li s4, 2	# quantos frames na altura maxima
-	sound_jump
+	jal SoundJump	# isso ta ocupando muiiito tempo
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
@@ -615,7 +705,7 @@ PlayerMoveRight:
 	li t1, 304
 	lw a1, 0(s1)
 	addi a1, a1, 8
-	bgt a1, t1, OutOfBoundsRight
+	bgt a1, t1, PlayerOutOfBoundsRight
 	# end OFB check
 	
 	
@@ -638,7 +728,7 @@ PlayerMoveLeft:
 	li t1, 8
 	lw a1, 0(s1)
 	addi a1, a1, -8
-	blt a1, t1, OutOfBoundsLeft
+	blt a1, t1, PlayerOutOfBoundsLeft
 	# end OFB check
 	
 	
@@ -662,7 +752,7 @@ Break:
 	addi sp, sp, 4
 	ret
 	
-OutOfBoundsRight:
+PlayerOutOfBoundsRight:
 	addi sp, sp, -4
 	sw ra, 0(sp)
 	
@@ -687,7 +777,7 @@ OutOfBoundsRight:
 	addi sp, sp, 4
 	j UPDATE
 	
-OutOfBoundsLeft:
+PlayerOutOfBoundsLeft:
 	addi sp, sp, -4
 	sw ra, 0(sp)
 
@@ -729,5 +819,8 @@ BarrelPrint:	# necessario para evitar leak de memoria, devido a um ret
 	
 HarryPrint:	# necessario para evitar leak de memoria, devido a um ret
 	harry_print a0, a1, a2
+	
+SoundJump:	# necessario para evitar leak de memoria, devido a um ret
+	sound_jump
 
 .include "SYSTEMv11.s"
