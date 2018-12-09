@@ -16,6 +16,22 @@
 	ret
 .end_macro
 
+.macro sound_gold ()
+	li	a0, 90
+	li	a1, 250
+	li	a2, 1
+	li	a3, 127
+	li	a7, 31
+	ecall
+	li	a0, 85
+	li	a1, 400
+	li	a2, 1
+	li	a3, 127
+	li	a7, 33
+	ecall
+	ret
+.end_macro
+
 .macro sound_hit ()
 	li	a0, 30
 	li	a1, 250
