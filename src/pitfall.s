@@ -7,9 +7,6 @@
 
 .data
 
-#INTRO: .string "images/intro.bin"
-#SCENA: .string "images/scenary.bin"
-#STAND: .string "images/harry/jump1.bin"
 colon: .string ":"
 vidatext: .string "Vidas: "
 pontostext: .string "Pontos: "
@@ -22,7 +19,7 @@ EnemyCoord: .word 	0, 0, 0,	# barril 1: x, y, isMoving.
 			0, 0,		# escorpiï¿½o
 			0, 0		# cobra		
 TreasureCoord: .word 	264, 128,	# x, y pos of treasure
-			0, 5, 7	# flags de controle pra saber se tesouro já foi pego e em quais niveis tem algum tesouro (mas 3 por enquanto)
+			0, 5, 7	# flags de controle pra saber se tesouro jï¿½ foi pego e em quais niveis tem algum tesouro (mas 3 por enquanto)
 
 .text
 
@@ -558,7 +555,7 @@ BACKGROUND:
 	li t2, 2
 	li t3, 3
 	
-	rem t4, t0, t3	# resto da divisão do nivel por 3 vai dar o bg certo
+	rem t4, t0, t3	# resto da divisï¿½o do nivel por 3 vai dar o bg certo
 	
 	beq t4, zero, LoadBG1
 	beq t4, t1, LoadBG2
@@ -965,7 +962,7 @@ COLISION:
 	lw a2, 4(s2)	# y pos barrel 1
 	addi a2, a2, -8	# adaptado pra coincidir com o mesmo plano que o player anda.
 	
-	beq t1, a1, CheckFirstBarrelColision 	# verifica se player esta na mesma posição do barril
+	beq t1, a1, CheckFirstBarrelColision 	# verifica se player esta na mesma posiï¿½ï¿½o do barril
 EndFirstBarrelColision:
 
 	# Check Colision with Barrel 2
@@ -974,7 +971,7 @@ EndFirstBarrelColision:
 	lw a2, 16(s2)	# y pos barrel 2
 	addi a2, a2, -8	# adaptado pra coincidir com o mesmo plano que o player anda.
 	
-	beq t1, a1, CheckSecondBarrelColision 	# verifica se player esta na mesma posição do barril
+	beq t1, a1, CheckSecondBarrelColision 	# verifica se player esta na mesma posiï¿½ï¿½o do barril
 EndSecondBarrelColision:
 
 	# Check Colision with Treasure
@@ -988,17 +985,17 @@ EndSecondBarrelColision:
 	lw a3, 8(s11)
 	bne a0, a3, TCaux1
 	li a4, 1
-	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posição do tesouro
+	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posiï¿½ï¿½o do tesouro
 	
 TCaux1:	lw a3, 12(s11)
 	bne a0, a3, TCaux2
 	li a4, 2
-	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posição do tesouro
+	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posiï¿½ï¿½o do tesouro
 	
 TCaux2:	lw a3, 16(s11)
 	bne a0, a3, EndTreasureColision
 	li a4, 3
-	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posição do tesouro
+	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posiï¿½ï¿½o do tesouro
 EndTreasureColision:
 	
 	lw ra, 0(sp)
