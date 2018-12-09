@@ -77,7 +77,7 @@ jump1: .word 20, 24
 	
 	li t3,0			#tamanho da quebra de linha
 	li t4,20
-	la t6,jump1
+	la t6,standing
 	addi t6,t6,8
 
 LOOP2: 	bgt t0,t1,END2	# Se for o �ltimo endere�o ent�o sai do loop

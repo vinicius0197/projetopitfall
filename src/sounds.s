@@ -16,7 +16,7 @@
 	ret
 .end_macro
 
-.macro sound_hitted ()
+.macro sound_hit ()
 	li	a0, 30
 	li	a1, 250
 	li	a2, 1

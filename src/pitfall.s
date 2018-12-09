@@ -3,24 +3,26 @@
 .include "sounds.s"
 .include "enemies.s"
 .include "background.s"
+.include "bonus.s"
 
 .data
 
-INTRO: .string "images/intro.bin"
-SCENA: .string "images/scenary.bin"
-STAND: .string "images/harry/jump1.bin"
+#INTRO: .string "images/intro.bin"
+#SCENA: .string "images/scenary.bin"
+#STAND: .string "images/harry/jump1.bin"
 colon: .string ":"
 vidatext: .string "Vidas: "
 pontostext: .string "Pontos: "
 
-LevelCounter: .word 1
+LevelCounter: .word 2
 PlayerVida: .word 3	# Nï¿½mero de vidas do Jogador. Se chegar a zero = game over
 PlayerCoord: .word 0, 120, 0 # +0: x coord, +4: y coord, (1o piso=192y, subsolo=120y), +12: isUnderground 0=false, 1=true
 EnemyCoord: .word 	0, 0, 0,	# barril 1: x, y, isMoving.
 			0, 0, 0,	# barril 2: x, y, isMoving
 			0, 0,		# escorpiï¿½o
-			0, 0		# fogo
-TreasureCoord: .word 0, 0
+			0, 0		# cobra		
+TreasureCoord: .word 	264, 128,	# x, y pos of treasure
+			0, 5, 7	# flags de controle pra saber se tesouro já foi pego e em quais niveis tem algum tesouro (mas 3 por enquanto)
 
 .text
 
@@ -58,15 +60,15 @@ TreasureCoord: .word 0, 0
 	jal LOADLEVEL	# essa funï¿½ï¿½o vai se encarregar de carregar o nivel certo. ï¿½ chamada sempre em transiï¿½ï¿½o de niveis. Apenas carrega as posiï¿½ï¿½es iniciais.
 	
 UPDATE: 								#update
-	li a0, 100	# limitar a velocidade. 100 ms parece bom
+	li a0, 100	# limitar a velocidade. 100 ms parece bom. DESLIGAR ANTES DE RODAR NA PLACA
 	li a7, 132
 	#ecall
 	jal BACKGROUND
 	jal HUD
 	jal CheckJump
 	jal GRAVIDADE
-	jal DrawBarrel
-	jal DrawPlayer
+	jal DRAW
+	jal COLISION
 	jal CONTROLE
 	j UPDATE
 	
@@ -100,6 +102,12 @@ Level1:	li t1, 1
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
 	
+	# spawn snake
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 32(s2)
+	sw t1, 36(s2)
+	
 	j EndLoadLevel
 # level 1 END
 #####################
@@ -126,6 +134,12 @@ Level2:	li t1, 2
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
 	
+	# spawn snake
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 32(s2)
+	sw t1, 36(s2)
+	
 	j EndLoadLevel
 # level 2 END
 #####################
@@ -150,7 +164,13 @@ Level3:	li t1, 3
 	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
-	sw t2, 20(s2)	
+	sw t2, 20(s2)
+	
+	# spawn snake
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 32(s2)
+	sw t1, 36(s2)	
 	
 	j EndLoadLevel
 # level 3 END
@@ -178,6 +198,12 @@ Level4:	li t1, 4
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
 	
+	# spawn snake
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 32(s2)
+	sw t1, 36(s2)
+	
 	j EndLoadLevel
 # level 4 END
 #####################
@@ -203,6 +229,12 @@ Level5:	li t1, 5
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
+	
+	# spawn snake
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 32(s2)
+	sw t1, 36(s2)
 	
 	j EndLoadLevel
 # level 5 END
@@ -230,6 +262,12 @@ Level6:	li t1, 6
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
 	
+	# spawn snake
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 32(s2)
+	sw t1, 36(s2)
+	
 	j EndLoadLevel
 # level 6 END
 #####################
@@ -255,6 +293,12 @@ Level7:	li t1, 7
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
+	
+	# spawn snake
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 32(s2)
+	sw t1, 36(s2)
 	
 	j EndLoadLevel
 # level 7 END
@@ -282,6 +326,12 @@ Level8:	li t1, 8
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
 	
+	# spawn snake
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 32(s2)
+	sw t1, 36(s2)
+	
 	j EndLoadLevel
 # level 8 END
 #####################
@@ -308,6 +358,12 @@ Level9:	li t1, 9
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
 	
+	# spawn snake
+	li t0, 0	# x pos
+	li t1, 0	# y pos
+	sw t0, 32(s2)
+	sw t1, 36(s2)
+	
 	j EndLoadLevel
 # level 9 END
 #####################
@@ -332,6 +388,12 @@ Level10:
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
+	
+	# spawn snake
+	li t0, 256	# x pos
+	li t1, 124	# y pos
+	sw t0, 32(s2)
+	sw t1, 36(s2)
 	
 # level 10 END
 #####################
@@ -490,7 +552,88 @@ LIVES:
 	ret	#end LIVES
 	
 BACKGROUND:
-	bg_level1
+	la t0, LevelCounter
+	lw t0, 0(t0)	# level
+	li t1, 1	
+	li t2, 2
+	li t3, 3
+	
+	rem t4, t0, t3	# resto da divisão do nivel por 3 vai dar o bg certo
+	
+	beq t4, zero, LoadBG1
+	beq t4, t1, LoadBG2
+	beq t4, t2, LoadBG3
+	
+	#se chegar aqui encerra pois bugou
+	#nunca sera executado
+	li a7, 110
+	ecall
+	
+LoadBG1:	bg_level1
+LoadBG2:	bg_level2
+LoadBG3:	bg_level3
+	
+DRAW:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
+	jal DrawBarrel
+	#jal DrawScorpion
+	jal DrawSnake
+	jal DrawTreasure
+	jal DrawPlayer
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret
+
+DrawTreasure:	# 20x24	Will only spawn in certain levels. If spawn control = 0 then player has already collected
+	addi sp, sp, -4	# begin DrawPlayer
+	sw ra, 0(sp)
+	
+	la t0, LevelCounter
+	lw t0, 0(t0)	# nivel atual
+	
+	li a0, 1	
+	lw a1, 0(s11)	# x pos treasure
+	lw a2, 4(s11)	# y pos treasure
+	
+	lw t1, 8(s11)	# primeiro nivel com tesouro
+	bne t0, t1, Taux1
+	beq t1, zero, NoMob
+	jal GoldbagPrint
+	j Taux3
+	
+Taux1:	lw t1, 12(s11)	# segundo nivel com tesouro
+	bne t0, t1, Taux2
+	beq t1, zero, NoMob
+	jal GoldbagPrint
+	j Taux3
+	
+Taux2:	lw t1, 16(s11)	# terceiro nivel com tesouro
+	bne t0, t1, Taux3
+	beq t1, zero, NoMob
+	jal GoldbagPrint
+	j Taux3	
+	
+Taux3:	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret		# end DrawPlayer
+			
+DrawSnake:	# 20x24
+	addi sp, sp, -4	# begin DrawPlayer
+	sw ra, 0(sp)
+	
+	
+	lw a2, 36(s2)	# y pos da snake, se for 0 nao tem.
+	beq a2, zero, NoMob
+	li a0, 1
+	lw a1, 32(s2)
+	jal SnakePrint
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret		# end DrawPlayer
 	
 DrawPlayer:	# 20x24
 	addi sp, sp, -4	# begin DrawPlayer
@@ -513,19 +656,19 @@ DrawBarrel:	# 20x24
 	
 	#desenha 1 barril
 	lw a2, 4(s2)	# y pos do 1 barril, se for 0 nao tem barril.
-	beq a2, zero, NoBarrel
+	beq a2, zero, NoMob
 	li a0, 1
 	lw a1, 0(s2)
 	jal BarrelPrint
 	
 	#desenha 2 barris
 	lw a2, 16(s2)	# y pos do 2 barril, se for 0 nao tem barril.
-	beq a2, zero, NoBarrel
+	beq a2, zero, NoMob
 	li a0, 1
 	lw a1, 12(s2)
 	jal BarrelPrint
 	
-NoBarrel:	lw ra, 0(sp)
+NoMob:	lw ra, 0(sp)
 	addi sp, sp, 4
 	ret		# end DrawBarrel
 	
@@ -810,17 +953,129 @@ SetLevel:
 	addi sp, sp, 4
 	j UPDATE
 	
-ENDGAME:
-	li a7, 110
-	ecall
+COLISION:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
+	lw t1, 0(s1)	# x pos player
+	lw t2, 4(s1)	# y pos player
+	
+	# Check Colision with Barrel 1
+	lw a1, 0(s2)	# x pos barrel 1
+	lw a2, 4(s2)	# y pos barrel 1
+	addi a2, a2, -8	# adaptado pra coincidir com o mesmo plano que o player anda.
+	
+	beq t1, a1, CheckFirstBarrelColision 	# verifica se player esta na mesma posição do barril
+EndFirstBarrelColision:
+
+	# Check Colision with Barrel 2
+	li t3, 2
+	lw a1, 12(s2)	# x pos barrel 2
+	lw a2, 16(s2)	# y pos barrel 2
+	addi a2, a2, -8	# adaptado pra coincidir com o mesmo plano que o player anda.
+	
+	beq t1, a1, CheckSecondBarrelColision 	# verifica se player esta na mesma posição do barril
+EndSecondBarrelColision:
+
+	# Check Colision with Treasure
+	lw a1, 0(s11)	# x pos treasure
+	lw a2, 4(s11)	# y pos treasure
+	addi a2, a2, -8	# adaptado pra coincidir com o mesmo plano que o player anda.
+	
+	la a0, LevelCounter
+	lw a0, 0(a0)	# LC
+	
+	lw a3, 8(s11)
+	bne a0, a3, TCaux1
+	li a4, 1
+	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posição do tesouro
+	
+TCaux1:	lw a3, 12(s11)
+	bne a0, a3, TCaux2
+	li a4, 2
+	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posição do tesouro
+	
+TCaux2:	lw a3, 16(s11)
+	bne a0, a3, EndTreasureColision
+	li a4, 3
+	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posição do tesouro
+EndTreasureColision:
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret
+	
+	
+###### aux colision calls ######
+
+CheckTreasureColision:	### tesouro
+	beq t2, a2, TreasureColision	# verifica se player esta no ar
+	j EndTreasureColision
+	
+TreasureColision:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
+	addi s5, s5, 2000	# score +2500
+	#jal SoundBling
+	# zerar tesouro correto
+	j EndTreasureColision
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret
+	
+CheckFirstBarrelColision:	### barril 1
+	beq t2, a2, FirstBarrelColision	# verifica se player esta no ar
+	j EndFirstBarrelColision
+	
+FirstBarrelColision:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
+	addi s5, s5, -20	# score -20
+	jal SoundHit
+	
+	j EndFirstBarrelColision
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret
+	
+CheckSecondBarrelColision:	### barril 2
+	beq t2, a2, SecondBarrelColision	# verifica se player esta no ar
+	j EndSecondBarrelColision
+	
+SecondBarrelColision:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
+	addi s5, s5, -20	# score -20
+	jal SoundHit
+	
+	j EndSecondBarrelColision
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret
+	
+	
+GoldbagPrint:	# necessario para evitar leak de memoria, devido a um ret
+	goldbag_print a0, a1, a2	
 	
 BarrelPrint:	# necessario para evitar leak de memoria, devido a um ret
 	barrel_print a0, a1, a2
+	
+SnakePrint:	# necessario para evitar leak de memoria, devido a um ret
+	snake_print a0, a1, a2
 	
 HarryPrint:	# necessario para evitar leak de memoria, devido a um ret
 	harry_print a0, a1, a2
 	
 SoundJump:	# necessario para evitar leak de memoria, devido a um ret
 	sound_jump
+	
+SoundHit:	# necessario para evitar leak de memoria, devido a um ret
+	sound_hit
 
 .include "SYSTEMv11.s"
