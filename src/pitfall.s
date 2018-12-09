@@ -11,20 +11,21 @@ colon: .string ":"
 vidatext: .string "Vidas: "
 pontostext: .string "Pontos: "
 
-LevelCounter: .word 2
-PlayerVida: .word 3	# Nï¿½mero de vidas do Jogador. Se chegar a zero = game over
-PlayerCoord: .word 0, 120, 0 # +0: x coord, +4: y coord, (1o piso=192y, subsolo=120y), +12: isUnderground 0=false, 1=true
+LevelCounter: .word 5
+PlayerVida: .word 3	# Número de vidas do Jogador. Se chegar a zero = game over
+PlayerCoord: .word 0, 123, 0 # +0: x coord, +4: y coord, (1o piso=123y, subsolo=195y), +12: isUnderground 0=false, 1=true
 EnemyCoord: .word 	0, 0, 0,	# barril 1: x, y, isMoving.
 			0, 0, 0,	# barril 2: x, y, isMoving
-			0, 0,		# escorpiï¿½o
-			0, 0		# cobra		
-TreasureCoord: .word 	264, 128,	# x, y pos of treasure
-			0, 5, 7	# flags de controle pra saber se tesouro jï¿½ foi pego e em quais niveis tem algum tesouro (mas 3 por enquanto)
+			0, 0,		# escorpião
+			0, 0,		# cobra
+			0, 0		# crocodile mouth open flag e timer of last change state	
+TreasureCoord: .word 	264, 131,	# x, y pos of treasure
+			2, 5, 7	# flags de controle pra saber se tesouro já foi pego e em quais niveis tem algum tesouro (mas 3 por enquanto)
 
 .text
 
 	###################
-	# Registradores permanentes e como estÃ£o sendo utlizados:
+	# Registradores permanentes e como estão sendo utlizados:
 	#
 	#	s1 = endereco das coordenadas atuais Jogador
 	#	s2 = endereco das coordenadas atuais Inimigos
@@ -32,11 +33,11 @@ TreasureCoord: .word 	264, 128,	# x, y pos of treasure
 	#	s11 = endereco das coordenadas do eventual Tesouro
 	#	s3 = altura do pulo
 	#	s4 = maxheight hold
-	#	s5 = Pontuaï¿½ï¿½o
+	#	s5 = Pontuação
 	#
 	###################
 	
-	M_SetEcall(exceptionHandling)	# Macro de SetEcall - nÃ£o tem ainda na DE1-SoC
+	M_SetEcall(exceptionHandling)	# Macro de SetEcall - não tem ainda na DE1-SoC
 	########
 	# startando timer
 	li a7, 130
@@ -53,8 +54,8 @@ TreasureCoord: .word 	264, 128,	# x, y pos of treasure
 	la s11, TreasureCoord
 	li s3, 0
 	li s4, 0
-	li s5, 2000		# pontuaï¿½ï¿½o inicial
-	jal LOADLEVEL	# essa funï¿½ï¿½o vai se encarregar de carregar o nivel certo. ï¿½ chamada sempre em transiï¿½ï¿½o de niveis. Apenas carrega as posiï¿½ï¿½es iniciais.
+	li s5, 2000		# pontuação inicial
+	jal LOADLEVEL	# essa função vai se encarregar de carregar o nivel certo. É chamada sempre em transição de niveis. Apenas carrega as posições iniciais.
 	
 UPDATE: 								#update
 	li a0, 100	# limitar a velocidade. 100 ms parece bom. DESLIGAR ANTES DE RODAR NA PLACA
@@ -85,7 +86,7 @@ Level1:	li t1, 1
 	
 	# spawn barril 1
 	li t0, 256	# x pos
-	li t1, 128	# y pos
+	li t1, 131	# y pos
 	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
@@ -117,7 +118,7 @@ Level2:	li t1, 2
 	
 	# spawn barril 1
 	li t0, 256	# x pos
-	li t1, 128	# y pos
+	li t1, 131	# y pos
 	li t2, 1	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
@@ -125,7 +126,7 @@ Level2:	li t1, 2
 	
 	# spawn barril 2
 	li t0, 200	# x pos
-	li t1, 128	# y pos
+	li t1, 131	# y pos
 	li t2, 1	# isMoving flag
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
@@ -388,7 +389,7 @@ Level10:
 	
 	# spawn snake
 	li t0, 256	# x pos
-	li t1, 124	# y pos
+	li t1, 127	# y pos
 	sw t0, 32(s2)
 	sw t1, 36(s2)
 	
@@ -554,21 +555,50 @@ BACKGROUND:
 	li t1, 1	
 	li t2, 2
 	li t3, 3
+	li t5, 5	
 	
-	rem t4, t0, t3	# resto da divisï¿½o do nivel por 3 vai dar o bg certo
+	beq t0, t5, CrocBG
+	
+	rem t4, t0, t3	# resto da divisão do nivel por 3 vai dar o bg certo
 	
 	beq t4, zero, LoadBG1
 	beq t4, t1, LoadBG2
-	beq t4, t2, LoadBG3
+	beq t4, t2, LoadBGCrocClose
 	
 	#se chegar aqui encerra pois bugou
 	#nunca sera executado
 	li a7, 110
 	ecall
 	
-LoadBG1:	bg_level1
-LoadBG2:	bg_level2
-LoadBG3:	bg_level3
+LoadBG1:		bg_level1
+LoadBG2:		bg_level2
+LoadBG3:		bg_level3
+LoadBGCrocClose:	bg_level4
+LoadBGCrocOpen:		bg_level5
+
+CrocBG:
+	lw t0, 40(s2)	# isMouthOpen
+	lw a1, 44(s2)	# timer do ultimo changestate 
+		
+	li a7, 130
+	ecall
+	
+	sub a2, a0, a1
+	li t3, 2500
+	
+	bgeu a2, t3, ChangeState	
+	
+	beq t0, t1, LoadBGCrocOpen
+	beq t0, zero, LoadBGCrocClose
+	
+ChangeState:
+	sw a0, 44(s2)
+	addi t0, t0, 1
+	rem t0, t0, t2
+	sw t0, 40(s2)
+	
+	beq t0, t1, LoadBGCrocOpen
+	beq t0, zero, LoadBGCrocClose
 	
 DRAW:
 	addi sp, sp, -4
@@ -765,14 +795,14 @@ GRAVIDADE:
 	
 	
 	# check for colision upper floor
-	li t1, 128
+	li t1, 131
 	lw a2, 4(s1)
 	addi a2, a2, 8
 	beq a2, t1, Break
 	# done checking
 	
 	# check for colision lower floor
-	li t1, 200
+	li t1, 203
 	lw a2, 4(s1)
 	addi a2, a2, 8
 	beq a2, t1, Break
@@ -982,25 +1012,31 @@ EndSecondBarrelColision:
 	la a0, LevelCounter
 	lw a0, 0(a0)	# LC
 	
-	lw a3, 8(s11)
-	bne a0, a3, TCaux1
+	lw a3, 8(s11)	# nivel onde se encontra o 1 tesouro
+	bne a0, a3, TCaux1	# verifica se esta no nivel do 1 tesouro; se nao estiver vai verificar se esta no nivel do 2 tesouro
 	li a4, 1
-	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posiï¿½ï¿½o do tesouro
+	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posicao do tesouro
 	
-TCaux1:	lw a3, 12(s11)
-	bne a0, a3, TCaux2
+TCaux1:	lw a3, 12(s11)	# nivel onde se encontra o 2 tesouro
+	bne a0, a3, TCaux2	# verifica se esta no nivel do 2 tesouro; se nao estiver vai verificar se esta no nivel do 3 tesouro
 	li a4, 2
-	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posiï¿½ï¿½o do tesouro
+	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posicao do tesouro
 	
-TCaux2:	lw a3, 16(s11)
-	bne a0, a3, EndTreasureColision
+TCaux2:	lw a3, 16(s11)	# nivel onde se encontra o 3 tesouro
+	bne a0, a3, EndTreasureColision	# verifica se esta no nivel do 3 tesouro; se nao estiver entao nao esta em um nivel de tesouro logo nao vai haver colisao
 	li a4, 3
-	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posiï¿½ï¿½o do tesouro
+	beq t1, a1, CheckTreasureColision 	# verifica se player esta na mesma posicao do tesouro
 EndTreasureColision:
+
+
+
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
 	ret
+	
+	
+	
 	
 	
 ###### aux colision calls ######
@@ -1013,14 +1049,28 @@ TreasureColision:
 	addi sp, sp, -4
 	sw ra, 0(sp)
 	
-	addi s5, s5, 2000	# score +2500
-	#jal SoundBling
+	li t3, 2500
+	add s5, s5, t3	# score +2500
+	jal SoundBling
 	# zerar tesouro correto
-	j EndTreasureColision
+	li t3, 1
+	li t4, 2
+	li t5, 3
+	beq a4, t3, FirstTC
+	beq a4, t4, SecondTC
+	beq a4, t5, ThirdTC
 	
-	lw ra, 0(sp)
+FirstTC:
+	sw zero, 8(s11)	
+	j ExitTC
+SecondTC:
+	sw zero, 12(s11)
+	j ExitTC
+ThirdTC:
+	sw zero, 16(s11)	
+ExitTC:	lw ra, 0(sp)
 	addi sp, sp, 4
-	ret
+	j EndTreasureColision
 	
 CheckFirstBarrelColision:	### barril 1
 	beq t2, a2, FirstBarrelColision	# verifica se player esta no ar
@@ -1033,11 +1083,9 @@ FirstBarrelColision:
 	addi s5, s5, -20	# score -20
 	jal SoundHit
 	
-	j EndFirstBarrelColision
-	
 	lw ra, 0(sp)
 	addi sp, sp, 4
-	ret
+	j EndFirstBarrelColision
 	
 CheckSecondBarrelColision:	### barril 2
 	beq t2, a2, SecondBarrelColision	# verifica se player esta no ar
@@ -1050,11 +1098,11 @@ SecondBarrelColision:
 	addi s5, s5, -20	# score -20
 	jal SoundHit
 	
-	j EndSecondBarrelColision
+	
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
-	ret
+	j EndSecondBarrelColision
 	
 	
 GoldbagPrint:	# necessario para evitar leak de memoria, devido a um ret
@@ -1069,10 +1117,16 @@ SnakePrint:	# necessario para evitar leak de memoria, devido a um ret
 HarryPrint:	# necessario para evitar leak de memoria, devido a um ret
 	harry_print a0, a1, a2
 	
+	
+	
+	
 SoundJump:	# necessario para evitar leak de memoria, devido a um ret
 	sound_jump
 	
 SoundHit:	# necessario para evitar leak de memoria, devido a um ret
 	sound_hit
+	
+SoundBling:
+	sound_next_level
 
 .include "SYSTEMv11.s"
