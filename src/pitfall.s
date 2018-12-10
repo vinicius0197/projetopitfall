@@ -7,20 +7,21 @@
 
 .data
 
+pixel: .string " "
 colon: .string ":"
 vidatext: .string "Vidas: "
 pontostext: .string "Pontos: "
 
 LevelCounter: .word 1
 PlayerVida: .word 3	# Número de vidas do Jogador. Se chegar a zero = game over
-PlayerCoord: .word 0, 123, 0 # +0: x coord, +4: y coord, (1o piso=123y, subsolo=195y), +12: isUnderground 0=false, 1=true
-EnemyCoord: .word 	0, 0, 0,	# barril 1: x, y, isMoving.
+PlayerCoord: .word 0, 123,	# +0: x coord, +4: y coord, (1o piso=123y, subsolo=195y)
+EnemyCoord: .word 0, 0, 0,		# barril 1: x, y, isMoving.
 			0, 0, 0,	# barril 2: x, y, isMoving
 			0, 0,		# escorpião
 			0, 0,		# cobra
 			0, 0		# crocodile mouth open flag e timer of last change state	
-TreasureCoord: .word 	264, 131,	# x, y pos of treasure
-			2, 5, 7	# flags de controle pra saber se tesouro já foi pego e em quais niveis tem algum tesouro (mas 3 por enquanto)
+TreasureCoord: .word 264, 131,	# x, y pos of treasure
+			3, 5, 10	# flags de controle pra saber se tesouro já foi pego e em quais niveis tem algum tesouro (mas 3 por enquanto)
 
 .text
 
@@ -41,7 +42,7 @@ TreasureCoord: .word 	264, 131,	# x, y pos of treasure
 	jal STARTUP
 	
 UPDATE: 								#update
-	li a0, 100	# limitar a velocidade. 100 ms parece bom. DESLIGAR ANTES DE RODAR NA PLACA
+	li a0, 50	# limitar a velocidade. 100 ms parece bom. DESLIGAR ANTES DE RODAR NA PLACA
 	li a7, 132
 	ecall
 	jal GAMEOVERCHECK
@@ -252,9 +253,8 @@ DRAW:
 	addi sp, sp, -4
 	sw ra, 0(sp)
 	
-	jal DrawBarrel
-	#jal DrawScorpion
 	jal DrawSnake
+	jal DrawBarrel
 	jal DrawTreasure
 	jal DrawPlayer
 	
@@ -674,11 +674,45 @@ EndTreasureColision:
 	lw a2, 36(s2)	# y pos snake
 	
 	beq t1, a1, CheckSnakeColision 	# verifica se player esta na mesma posicao da cobra
+	addi a1, a1, -8
+	beq t1, a1, CheckSnakeColision 	# verifica se player esta um pixel a esquerda da posicao da cobra
+	addi a1, a1, 16
+	beq t1, a1, CheckSnakeColision 	# verifica se player esta um pixel a direita da posicao da cobra
 EndSnakeColision:
 
-
-
+	# Check level 5 colisions
+	la a0, LevelCounter
+	lw a0, 0(a0)	# LC
+	li a1, 5
+	bne a1, a0, EndCrocodileColision	# se nao é nivel 5, nao precisa checar nem agua nem crocodilo
 	
+	# Check Colision with Water
+	li a1, 96
+	beq t1, a1, CheckWaterColision
+	addi a1, a1, 8
+	beq t1, a1, CheckWaterColision
+	addi a1, a1, 8
+	beq t1, a1, CheckWaterColision
+	addi a1, a1, 32
+	beq t1, a1, CheckWaterColision
+	addi a1, a1, 32
+	beq t1, a1, CheckWaterColision
+	addi a1, a1, 32
+	beq t1, a1, CheckWaterColision
+	addi a1, a1, 8
+	beq t1, a1, CheckWaterColision
+	
+EndWaterColision:
+		
+	# Check Colision with Crocodile
+	li a1, 120
+	beq t1, a1, CheckCrocodileColision
+	addi a1, a1, 32
+	beq t1, a1, CheckCrocodileColision
+	addi a1, a1, 32
+	beq t1, a1, CheckCrocodileColision
+EndCrocodileColision:
+
 	lw ra, 0(sp)
 	addi sp, sp, 4
 	ret
@@ -765,6 +799,40 @@ SnakeColision:
 	addi sp, sp, 4
 	j EndSnakeColision
 	
+CheckWaterColision:	
+	li a2, 123
+	beq t2, a2, WaterColision	# verifica se player esta no ar
+	j EndWaterColision
+	
+WaterColision:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
+	jal SoundBling
+	jal PlayerDeath
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	j EndWaterColision
+	
+CheckCrocodileColision:
+	li a2, 123
+	lw a1, 40(s2)
+	beq a1, zero, EndCrocodileColision
+	beq t2, a2, CrocodileColision	# verifica se player esta no ar
+	j EndCrocodileColision
+	
+CrocodileColision:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
+	jal SoundHit
+	jal PlayerDeath
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	j EndCrocodileColision
+	
 ###### end of aux colision calls ######
 
 PlayerDeath:
@@ -779,7 +847,7 @@ PlayerDeath:
 	sw a1, 0(a0)
 	
 	li a1, 0	# respawn Player
-	li a2, 99
+	li a2, 83
 	sw a1, 0(s1)
 	sw a2, 4(s1)
 	
@@ -855,7 +923,26 @@ STARTUP:	# carrega todos os registradores e memória corretamente
 	li s3, 0
 	li s4, 0
 	li s5, 2000		# pontuação inicial
+	
+	jal RandomizeStartingLevel	# se comentar, vai carregar o nivel 1. Deixe comentado para ser fiel ao original. Descomente pra mais variedade.
 	jal LOADLEVEL	# essa função vai se encarregar de carregar o nivel certo. É chamada sempre em transição de niveis. Apenas carrega as posições iniciais.
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret
+	
+RandomizeStartingLevel:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
+	li a7, 130
+	ecall
+	li a1, 9
+	li a7, 42
+	ecall
+	addi a0, a0, 1
+	la a1, LevelCounter
+	sw a0, 0(a1)
 	
 	lw ra, 0(sp)
 	addi sp, sp, 4
@@ -939,8 +1026,8 @@ Level1:	li t1, 1
 	sw t2, 8(s2)
 	
 	# spawn barril 2
-	li t0, 0	# x pos
-	li t1, 0	# y pos
+	li t0, 120	# x pos
+	li t1, 131	# y pos
 	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
@@ -963,7 +1050,7 @@ Level2:	li t1, 2
 	#carrega inimigos, tesouros, obstaculos, etc
 	
 	# spawn barril 1
-	li t0, 256	# x pos
+	li t0, 320	# x pos
 	li t1, 131	# y pos
 	li t2, 1	# isMoving flag
 	sw t0, 0(s2)
@@ -1011,8 +1098,8 @@ Level3:	li t1, 3
 	sw t2, 20(s2)
 	
 	# spawn snake
-	li t0, 0	# x pos
-	li t1, 0	# y pos
+	li t0, 160	# x pos
+	li t1, 123	# y pos
 	sw t0, 32(s2)
 	sw t1, 36(s2)	
 	
@@ -1027,17 +1114,17 @@ Level4:	li t1, 4
 	#carrega inimigos, tesouros, obstaculos, etc
 	
 	# spawn barril 1
-	li t0, 0	# x pos
-	li t1, 0	# y pos
+	li t0, 40	# x pos
+	li t1, 131	# y pos
 	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
 	sw t2, 8(s2)
 	
 	# spawn barril 2
-	li t0, 0	# x pos
-	li t1, 0	# y pos
-	li t2, 0	# isMoving flag
+	li t0, 120	# x pos
+	li t1, 131	# y pos
+	li t2, 1	# isMoving flag
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
@@ -1091,17 +1178,17 @@ Level6:	li t1, 6
 	#carrega inimigos, tesouros, obstaculos, etc
 	
 	# spawn barril 1
-	li t0, 0	# x pos
-	li t1, 0	# y pos
-	li t2, 0	# isMoving flag
+	li t0, 168	# x pos
+	li t1, 131	# y pos
+	li t2, 1	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
 	sw t2, 8(s2)
 	
 	# spawn barril 2
-	li t0, 0	# x pos
-	li t1, 0	# y pos
-	li t2, 0	# isMoving flag
+	li t0, 200	# x pos
+	li t1, 131	# y pos
+	li t2, 1	# isMoving flag
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
@@ -1123,24 +1210,24 @@ Level7:	li t1, 7
 	#carrega inimigos, tesouros, obstaculos, etc
 	
 	# spawn barril 1
-	li t0, 0	# x pos
-	li t1, 0	# y pos
-	li t2, 0	# isMoving flag
+	li t0, 40	# x pos
+	li t1, 131	# y pos
+	li t2, 1	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
 	sw t2, 8(s2)
 	
 	# spawn barril 2
-	li t0, 0	# x pos
-	li t1, 0	# y pos
+	li t0, 184	# x pos
+	li t1, 131	# y pos
 	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
 	
 	# spawn snake
-	li t0, 0	# x pos
-	li t1, 0	# y pos
+	li t0, 160	# x pos
+	li t1, 123	# y pos
 	sw t0, 32(s2)
 	sw t1, 36(s2)
 	
@@ -1155,9 +1242,9 @@ Level8:	li t1, 8
 	#carrega inimigos, tesouros, obstaculos, etc
 	
 	# spawn barril 1
-	li t0, 0	# x pos
-	li t1, 0	# y pos
-	li t2, 0	# isMoving flag
+	li t0, 16	# x pos
+	li t1, 131	# y pos
+	li t2, 1	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
 	sw t2, 8(s2)
@@ -1187,24 +1274,24 @@ Level9:	li t1, 9
 	#carrega inimigos, tesouros, obstaculos, etc
 	
 	# spawn barril 1
-	li t0, 0	# x pos
-	li t1, 0	# y pos
+	li t0, 136	# x pos
+	li t1, 131	# y pos
 	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
 	sw t2, 8(s2)
 	
 	# spawn barril 2
-	li t0, 0	# x pos
-	li t1, 0	# y pos
+	li t0, 184	# x pos
+	li t1, 131	# y pos
 	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
 	
 	# spawn snake
-	li t0, 0	# x pos
-	li t1, 0	# y pos
+	li t0, 160	# x pos
+	li t1, 123	# y pos
 	sw t0, 32(s2)
 	sw t1, 36(s2)
 	
@@ -1218,23 +1305,23 @@ Level10:
 	#carrega inimigos, tesouros, obstaculos, etc
 	
 	# spawn barril 1
-	li t0, 0	# x pos
-	li t1, 0	# y pos
+	li t0, 280	# x pos
+	li t1, 131	# y pos
 	li t2, 0	# isMoving flag
 	sw t0, 0(s2)
 	sw t1, 4(s2)
 	sw t2, 8(s2)
 	
 	# spawn barril 2
-	li t0, 0	# x pos
-	li t1, 0	# y pos
+	li t0, 296	# x pos
+	li t1, 131	# y pos
 	li t2, 0	# isMoving flag
 	sw t0, 12(s2)
 	sw t1, 16(s2)	
 	sw t2, 20(s2)
 	
 	# spawn snake
-	li t0, 256	# x pos
+	li t0, 16	# x pos
 	li t1, 123	# y pos
 	sw t0, 32(s2)
 	sw t1, 36(s2)
