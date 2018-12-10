@@ -7,21 +7,20 @@
 
 .data
 
-pixel: .string " "
 colon: .string ":"
 vidatext: .string "Vidas: "
 pontostext: .string "Pontos: "
 
 LevelCounter: .word 1
 PlayerVida: .word 3	# Número de vidas do Jogador. Se chegar a zero = game over
-PlayerCoord: .word 0, 123,	# +0: x coord, +4: y coord, (1o piso=123y, subsolo=195y)
+PlayerCoord: .word 0, 123	# +0: x coord, +4: y coord, (1o piso=123y, subsolo=195y)
 EnemyCoord: .word 0, 0, 0,		# barril 1: x, y, isMoving.
 			0, 0, 0,	# barril 2: x, y, isMoving
 			0, 0,		# escorpião
 			0, 0,		# cobra
 			0, 0		# crocodile mouth open flag e timer of last change state	
 TreasureCoord: .word 264, 131,	# x, y pos of treasure
-			3, 5, 10	# flags de controle pra saber se tesouro já foi pego e em quais niveis tem algum tesouro (mas 3 por enquanto)
+			3, 5, 10	# flags de controle pra saber se tesouro já foi pego e em quais niveis tem algum tesouro (max 3 por enquanto)
 
 .text
 
@@ -924,7 +923,7 @@ STARTUP:	# carrega todos os registradores e memória corretamente
 	li s4, 0
 	li s5, 2000		# pontuação inicial
 	
-	jal RandomizeStartingLevel	# se comentar, vai carregar o nivel 1. Deixe comentado para ser fiel ao original. Descomente pra mais variedade.
+	#jal RandomizeStartingLevel	# se comentar, vai carregar o nivel 1. Deixe comentado para ser fiel ao original. Descomente pra mais variedade.
 	jal LOADLEVEL	# essa função vai se encarregar de carregar o nivel certo. É chamada sempre em transição de niveis. Apenas carrega as posições iniciais.
 	
 	lw ra, 0(sp)
