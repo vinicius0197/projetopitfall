@@ -152,11 +152,11 @@ Ela captura uma tecla do teclado através da função GetCommand e decide que a�
 Sendo bem sincero, eu não parei muito para enteder como funciona esta função, porque copiamos ela do exemplo do professor. O importante pra saber aqui é que ela é a alternativa pra não usar ecalls de input, pois estes travam o processo (thread) até que leiam algo. Desta forma, é possível não ler nada e partir para a próxima iteração do loop.
 
 ## PlayerMoveRight:
-Esta função apenas atualiza a posição do jogador um certo valor para a direita. Antes disso no entanto, ela verifica se a posição futura está fora do limite da tela, e se estiver chama a função de OutOfBoundsRight.
+Esta função apenas atualiza a posição do jogador um certo valor para a direita. Antes disso no entanto, ela verifica se a posição futura está fora do limite da tela, e se estiver chama a função de PlayerOutOfBoundsRight.
 	
-## OutOfBoundsRight:
+## PlayerOutOfBoundsRight:
 Esta função faz duas coisas: primeiro ela atualiza a posição do jogador para a extrema esquerda (assim dando a ilusão que a câmera foi pra frente pra acompanhar ele), e depois ela muda o nível. A atualização da posição do jogador é bem óbvia, apenas seta o valor da coordenada x de PlayerCoord para o valor desejado. Para mudar para o nível certo, ela identifica em qual nível o jogador está agora e checa pra ver se está no último nível, porque se estiver, ela vai para um label SetLevel que seta o nível como o nível 1. Se essa checagem falha, ela apenas incrementa o LevelCounter em 1. Por fim, ela chama a função LOADLEVEL para carregar em memória os valores corretos do novo nível.
 
-É fácil ver que PlayerMoveLeft e OutOfBoundLeft se comportam de forma análoga às funções acima. 
+É fácil ver que PlayerMoveLeft e PlayerOutOfBoundLeft se comportam de forma análoga às funções acima. 
 
 Com isso concluo a explicação do código, espero que tenha sido bem elucidativo. Qualquer dúvida, só falar.
